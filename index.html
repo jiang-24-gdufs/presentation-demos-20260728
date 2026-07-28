@@ -438,6 +438,58 @@
         </tbody>
     </table>
 
+    <h3>GIS 行业常用坐标系（EPSG 编码）</h3>
+    <table>
+        <thead><tr><th>EPSG</th><th>名称</th><th>类型</th><th>使用场景</th></tr></thead>
+        <tbody>
+            <tr>
+                <td><strong>4326</strong></td>
+                <td>WGS 84</td>
+                <td>地理坐标（经纬度）</td>
+                <td>GPS 全球标准；<strong>Cesium 内部默认坐标系</strong></td>
+            </tr>
+            <tr>
+                <td><strong>3857</strong></td>
+                <td>Web Mercator</td>
+                <td>投影坐标（米）</td>
+                <td>Google Maps / OSM / 天地图 Web 瓦片；正方形切割，高纬度变形严重</td>
+            </tr>
+            <tr>
+                <td><strong>4490</strong></td>
+                <td>CGCS2000 地理</td>
+                <td>地理坐标（经纬度）</td>
+                <td>中国国家标准（天地图、自然资源部），与 WGS84 差异 &lt; 1cm</td>
+            </tr>
+            <tr>
+                <td><strong>4548</strong></td>
+                <td>CGCS2000 / 3°带投影</td>
+                <td>投影坐标（米）</td>
+                <td>国土测绘、城市规划、工程测量，iDesktop 制图常用</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>超图工具链中的坐标系</h3>
+    <div class="card-grid">
+        <div class="card">
+            <h4>iDesktop（桌面端制图）</h4>
+            <p>数据入库时设定坐标系。测绘数据常用 CGCS2000 (4490/4548)，互联网数据常用 WGS84 (4326)。<strong>坐标系在此阶段确定，后续流程必须一致。</strong></p>
+        </div>
+        <div class="card">
+            <h4>iServer（服务发布）</h4>
+            <p>发布三维服务时可配置动态投影。REST 接口返回的坐标默认与数据源一致，也可在请求参数中指定 <code>prjCoordSys</code> 转换。</p>
+        </div>
+        <div class="card">
+            <h4>Cesium 前端加载</h4>
+            <p>Cesium 内部统一使用 WGS84 + Cartesian3。CGCS2000 (4490) 与 WGS84 (4326) 在实际使用中差异极小（&lt;1cm），可直接当作 4326 使用。</p>
+        </div>
+    </div>
+
+    <div class="alert alert-warn">
+        <span class="alert-icon">⚠</span>
+        <div><strong>为什么坐标系这么多？</strong>地球不是完美球体，不同地区/行业采用不同的参考椭球和投影方式以获得最佳精度。Web 端统一用 4326（地理）+ 3857（投影），Cesium 三维场景内部全部基于 WGS84。遇到数据偏移时，首先检查数据源和加载端的坐标系是否一致。</div>
+    </div>
+
     <h3>核心转换流程</h3>
     <div class="flow">
         <div class="flow-step">WGS84 经纬度<br><code>(lng, lat, alt)</code></div>

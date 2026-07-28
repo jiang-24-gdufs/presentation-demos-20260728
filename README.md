@@ -4,6 +4,7 @@
 
 | 文件 | Cesium 版本 | 说明 |
 |------|------------|------|
+| `shared-config.js` | — | 公用配置模块（Ion Token + 版本检测），所有示例统一引入 |
 | `index.html` | — | 核心讲解文档（单页幻灯片，滚动/点击切换章节） |
 | `demo-01-loading.html` | CDN 社区版 | 模块一：数据类型与加载（Bing / Google 影像 + 地形 + 3D Tiles） |
 | `demo-02-entity.html` | 本地超图版 | 模块二：Entity API（增删改查 + 属性绑定） |
@@ -58,18 +59,15 @@ python -m http.server 8080
 
 ## Cesium Ion 令牌配置
 
-所有示例中使用 `YOUR_CESIUM_ION_TOKEN` 作为令牌占位符。运行前需替换为你自己的令牌：
+所有示例通过 `shared-config.js` 统一管理 Ion Token，**无需逐文件修改**。
 
-1. 前往 [Cesium Ion](https://ion.cesium.com/tokens) 获取或创建令牌
-2. 全局替换所有文件中的 `YOUR_CESIUM_ION_TOKEN`
+如需更换令牌，只需编辑 `shared-config.js` 中的 `CESIUM_ION_TOKEN` 变量：
 
-```powershell
-# 批量替换（PowerShell）
-Get-ChildItem *.html | ForEach-Object {
-    (Get-Content $_.FullName) -replace 'YOUR_CESIUM_ION_TOKEN', '你的实际令牌' |
-    Set-Content $_.FullName
-}
+```javascript
+var CESIUM_ION_TOKEN = '你的实际令牌';
 ```
+
+获取令牌：[Cesium Ion Tokens](https://ion.cesium.com/tokens)
 
 ## 可用的 Ion Asset ID
 

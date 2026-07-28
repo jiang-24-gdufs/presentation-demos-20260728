@@ -10,6 +10,7 @@
     -->
     <link href="https://cesium.com/downloads/cesiumjs/releases/1.119/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
     <script src="https://cesium.com/downloads/cesiumjs/releases/1.119/Build/Cesium/Cesium.js"></script>
+    <script src="shared-config.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html, body { width: 100%; height: 100%; overflow: hidden; font-family: 'Segoe UI', system-ui, sans-serif; }
@@ -62,7 +63,8 @@
             position: absolute; top: 66px; right: 16px; z-index: 10;
             background: rgba(11, 30, 61, .94); color: #fff;
             padding: 16px 20px; border-radius: 8px; border: 1px solid #2ec5ad;
-            width: 320px; font-size: 13px;
+            width: 340px; font-size: 13px;
+            max-height: calc(100vh - 110px); overflow-y: auto;
         }
         #infoPanel h3 { color: #2ec5ad; font-size: 14px; margin-bottom: 10px; }
         #infoPanel table { width: 100%; border-collapse: collapse; }
@@ -120,43 +122,71 @@
         <button class="btn btn-outline" onclick="clearMarkers()">清除所有标注点</button>
     </div>
 
-    <!-- 右侧：坐标系说明 -->
+    <!-- 右侧：坐标系说明（可滚动） -->
     <div id="infoPanel">
-        <h3>Cesium 三种坐标系</h3>
+        <h3>Cesium 内部坐标</h3>
         <table>
-            <thead><tr><th>坐标系</th><th>表示</th><th>用途</th></tr></thead>
+            <thead><tr><th>类型</th><th>表示</th><th>用途</th></tr></thead>
+            <tbody>
+                <tr><td><strong>WGS84</strong></td><td>经度 / 纬度 / 高程</td><td>GPS 定位、用户输入</td></tr>
+                <tr><td><strong>Cartesian3</strong></td><td>X / Y / Z（米）</td><td>Entity 定位、空间计算</td></tr>
+                <tr><td><strong>屏幕坐标</strong></td><td>px_x / px_y</td><td>鼠标交互、UI 弹窗</td></tr>
+            </tbody>
+        </table>
+
+        <h3 style="margin-top:14px;">GIS 常用坐标系（EPSG）</h3>
+        <table>
+            <thead><tr><th>EPSG</th><th>名称</th><th>说明</th></tr></thead>
             <tbody>
                 <tr>
-                    <td><strong>WGS84</strong></td>
-                    <td>经度 / 纬度 / 高程</td>
-                    <td>地理定位、GPS、用户输入</td>
+                    <td><strong>4326</strong></td>
+                    <td>WGS 84</td>
+                    <td>GPS 全球标准，经纬度，<strong>Cesium 默认</strong></td>
                 </tr>
                 <tr>
-                    <td><strong>Cartesian3</strong></td>
-                    <td>X / Y / Z（米）</td>
-                    <td>三维空间计算、Entity 定位</td>
+                    <td><strong>3857</strong></td>
+                    <td>Web Mercator</td>
+                    <td>Web 地图投影（Google/OSM/天地图），单位：米。正方形瓦片，高纬度变形大</td>
                 </tr>
                 <tr>
-                    <td><strong>屏幕坐标</strong></td>
-                    <td>px_x / px_y</td>
-                    <td>鼠标交互、UI 定位、拾取</td>
+                    <td><strong>4490</strong></td>
+                    <td>CGCS2000 地理</td>
+                    <td>中国国家大地坐标系，经纬度。天地图、自然资源部标准</td>
+                </tr>
+                <tr>
+                    <td><strong>4548</strong></td>
+                    <td>CGCS2000 投影</td>
+                    <td>CGCS2000 高斯-克吕格投影，单位：米。国土测绘常用</td>
                 </tr>
             </tbody>
         </table>
 
-        <h3 style="margin-top:16px;">核心转换 API</h3>
+        <h3 style="margin-top:14px;">超图 iDesktop / iServer</h3>
+        <table>
+            <tbody>
+                <tr><td><strong>iDesktop</strong></td><td>数据制作时设定坐标系，常用 CGCS2000 (4490/4548) 或 WGS84 (4326)</td></tr>
+                <tr><td><strong>iServer</strong></td><td>发布服务时可设置动态投影，REST 接口返回的坐标默认与数据源一致</td></tr>
+                <tr><td><strong>Cesium 加载</strong></td><td>内部统一转为 WGS84 + Cartesian3，CGCS2000 与 WGS84 差异 &lt; 1cm 可直接用</td></tr>
+            </tbody>
+        </table>
+
+        <h3 style="margin-top:14px;">核心转换 API</h3>
         <table>
             <tbody>
                 <tr><td>经纬度→笛卡尔</td><td><code>Cartesian3.fromDegrees()</code></td></tr>
                 <tr><td>笛卡尔→经纬度</td><td><code>Cartographic.fromCartesian()</code></td></tr>
-                <tr><td>弧度↔角度</td><td><code>Math.toDegrees()</code><br><code>Math.toRadians()</code></td></tr>
-                <tr><td>屏幕→世界</td><td><code>scene.pickPosition()</code><br><code>camera.pickEllipsoid()</code></td></tr>
+                <tr><td>弧度↔角度</td><td><code>Math.toDegrees()</code> / <code>toRadians()</code></td></tr>
+                <tr><td>屏幕→世界</td><td><code>scene.pickPosition()</code></td></tr>
                 <tr><td>世界→屏幕</td><td><code>SceneTransforms.wgs84ToWindowCoordinates()</code></td></tr>
             </tbody>
         </table>
 
-        <div style="margin-top:12px;padding:8px 12px;background:rgba(255,193,7,.1);border-left:3px solid #ffc107;border-radius:4px;font-size:12px;color:#fde68a;line-height:1.5;">
-            ⚠ 常见错误：<code>fromDegrees</code> 参数顺序是 <strong>(经度, 纬度, 高度)</strong>，不是 (纬度, 经度)。搞反了东西就会"放歪"。
+        <div style="margin-top:10px;padding:8px 12px;background:rgba(255,193,7,.1);border-left:3px solid #ffc107;border-radius:4px;font-size:12px;color:#fde68a;line-height:1.5;">
+            ⚠ <code>fromDegrees</code> 参数顺序：<strong>(经度, 纬度, 高度)</strong>，不是 (纬度, 经度)！
+        </div>
+        <div style="margin-top:6px;padding:8px 12px;background:rgba(59,130,246,.1);border-left:3px solid #3b82f6;border-radius:4px;font-size:12px;color:#93c5fd;line-height:1.5;">
+            💡 为什么坐标系这么多？<br>
+            地球不是完美球体 → 不同地区采用不同椭球和投影 → 各国/各行业需要各自精度最优的坐标系。Web 端统一用 4326 + 3857，Cesium 内部全部基于 WGS84。
         </div>
     </div>
 
@@ -180,8 +210,6 @@
     </div>
 
     <script>
-        Cesium.Ion.defaultAccessToken = 'YOUR_CESIUM_ION_TOKEN';
-
         (async function () {
             const viewer = new Cesium.Viewer('cesiumContainer', {
                 baseLayerPicker: false, geocoder: false, homeButton: false,

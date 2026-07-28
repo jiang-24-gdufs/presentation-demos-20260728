@@ -63,3 +63,9 @@ VM217:2 Uncaught TypeError: Cesium.Cesium3DTileset.fromIonAssetId is not a funct
 
 屏幕坐标 ↔ 地理坐标（点击位置转经纬度）。
 ```
+
+---
+1. 新增公用的modulees来加载公用的依赖和配置token，并引入到各示例中，避免出现报错：
+"{\"code\":\"INVALID_TOKEN\",\"message\":\"Invalid access token\"}"
+2. 坐标系统中，需要说明IDesktop ISERVER 和 实际超图加载的整个常用坐标系；好像还用到过3857坐标系，解释不同的坐标系有什么区别，为什么有这么多坐标系
+3. 
