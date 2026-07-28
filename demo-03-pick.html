@@ -12,16 +12,16 @@
         #guide {
             position: absolute; top: 66px; left: 16px; z-index: 10;
             background: rgba(11, 30, 61, .94); color: #fff;
-            padding: 16px 20px; border-radius: 8px; border: 1px solid #2ec5ad;
+            padding: 16px 20px; border-radius: 8px; border: 1px solid #36c9b0;
             width: 310px; font-size: 13px; max-height: calc(100vh - 90px); overflow-y: auto;
         }
-        #guide h3 { color: #2ec5ad; font-size: 14px; margin: 14px 0 8px; }
+        #guide h3 { color: #36c9b0; font-size: 14px; margin: 14px 0 8px; }
         #guide h3:first-child { margin-top: 0; }
         #guide .step { padding: 4px 0; line-height: 1.6; }
-        #guide .step strong { color: #2ec5ad; }
+        #guide .step strong { color: #36c9b0; }
         #guide label { display: flex; align-items: center; gap: 8px; padding: 5px 0; cursor: pointer; }
-        #guide input[type="checkbox"] { accent-color: #2ec5ad; width: 15px; height: 15px; }
-        #guide code { background: rgba(46,197,173,.15); padding: 2px 6px; border-radius: 3px; font-size: 12px; color: #2ec5ad; }
+        #guide input[type="checkbox"] { accent-color: #36c9b0; width: 15px; height: 15px; }
+        #guide code { background: rgba(46,197,173,.15); padding: 2px 6px; border-radius: 3px; font-size: 12px; color: #36c9b0; }
         .divider { border: none; border-top: 1px solid #526f82; margin: 10px 0; }
         .warning {
             margin-top: 10px; padding: 8px 12px;
@@ -33,18 +33,18 @@
         #geoQuery {
             position: absolute; bottom: 46px; right: 16px; z-index: 10;
             background: rgba(11, 30, 61, .94); color: #fff;
-            padding: 16px 20px; border-radius: 8px; border: 1px solid #2ec5ad;
+            padding: 16px 20px; border-radius: 8px; border: 1px solid #36c9b0;
             width: 300px; font-size: 13px;
         }
-        #geoQuery h3 { color: #2ec5ad; font-size: 14px; margin-bottom: 10px; }
+        #geoQuery h3 { color: #36c9b0; font-size: 14px; margin-bottom: 10px; }
         #geoQuery .field { display: flex; gap: 8px; margin-bottom: 8px; }
-        #geoQuery .field label { flex: 0 0 40px; color: #8ba3bf; line-height: 30px; padding: 0; }
+        #geoQuery .field label { flex: 0 0 40px; color: #a8bdd0; line-height: 30px; padding: 0; }
         #geoQuery .field input {
             flex: 1; padding: 6px 8px; background: rgba(255,255,255,.08);
             border: 1px solid #526f82; color: #fff; border-radius: 4px; font-size: 13px;
         }
         #geoQuery button {
-            width: 100%; padding: 8px; background: #2ec5ad; color: #fff;
+            width: 100%; padding: 8px; background: #36c9b0; color: #fff;
             border: none; border-radius: 4px; cursor: pointer; font-size: 13px; margin-top: 4px;
         }
         #geoQuery button:hover { background: #26a08d; }
@@ -53,19 +53,19 @@
         #popup {
             display: none; position: absolute; z-index: 20;
             background: rgba(11, 30, 61, .96); color: #fff;
-            padding: 16px 20px; border-radius: 8px; border: 1px solid #2ec5ad;
+            padding: 16px 20px; border-radius: 8px; border: 1px solid #36c9b0;
             min-width: 300px; max-width: 420px; font-size: 13px;
             box-shadow: 0 8px 32px rgba(0,0,0,.5);
         }
-        #popup h4 { color: #2ec5ad; margin-bottom: 10px; font-size: 15px; }
+        #popup h4 { color: #36c9b0; margin-bottom: 10px; font-size: 15px; }
         #popup .tag { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 3px; margin-bottom: 8px; }
-        #popup .tag-entity { background: rgba(46,197,173,.2); color: #2ec5ad; }
+        #popup .tag-entity { background: rgba(46,197,173,.2); color: #36c9b0; }
         #popup .tag-tile { background: rgba(59,130,246,.2); color: #93c5fd; }
         #popup .tag-model { background: rgba(168,85,247,.2); color: #c4b5fd; }
         #popup .tag-geo { background: rgba(255,193,7,.2); color: #fde68a; }
         #popup table { width: 100%; border-collapse: collapse; }
         #popup td { padding: 4px 8px; border-bottom: 1px solid rgba(255,255,255,.08); }
-        #popup td:first-child { color: #8ecae6; white-space: nowrap; width: 90px; }
+        #popup td:first-child { color: #a8d4ee; white-space: nowrap; width: 90px; }
         #popup .close-btn { position: absolute; top: 8px; right: 12px; background: none; border: none; color: #e74c3c; font-size: 18px; cursor: pointer; }
         #status { max-width: 45vw; }
     </style>
@@ -101,7 +101,7 @@
         <div class="field"><label>经度</label><input type="number" id="qLng" value="116.3975" step="0.001"></div>
         <div class="field"><label>纬度</label><input type="number" id="qLat" value="39.9087" step="0.001"></div>
         <button onclick="geoQueryTiles()">飞行至坐标并查询要素</button>
-        <div style="margin-top:8px;font-size:11px;color:#8ba3bf;">
+        <div style="margin-top:8px;font-size:11px;color:#a8bdd0;">
             输入经纬度 → 飞行到目标位置 → 自动拾取正下方 3D Tiles 要素属性。需先勾选加载 OSM Buildings。
         </div>
     </div>
@@ -144,7 +144,7 @@
                 { id: 'poi-05', name: '故宫',     lng: 116.3972, lat: 39.9163, status: '正常', category: '文化地标' }
             ];
             const statusColors = {
-                '正常': Cesium.Color.fromCssColorString('#2ec5ad'),
+                '正常': Cesium.Color.fromCssColorString('#36c9b0'),
                 '告警': Cesium.Color.fromCssColorString('#ffc107'),
                 '离线': Cesium.Color.fromCssColorString('#e74c3c')
             };

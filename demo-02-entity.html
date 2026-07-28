@@ -12,13 +12,13 @@
         #panel {
             position: absolute; top: 70px; left: 16px; z-index: 10;
             background: rgba(11, 30, 61, .92); color: #fff;
-            padding: 16px 20px; border-radius: 8px; border: 1px solid #2ec5ad;
+            padding: 16px 20px; border-radius: 8px; border: 1px solid #36c9b0;
             width: 280px; font-size: 13px;
         }
-        #panel h3 { color: #2ec5ad; font-size: 15px; margin-bottom: 12px; }
+        #panel h3 { color: #36c9b0; font-size: 15px; margin-bottom: 12px; }
         #panel button {
             display: block; width: 100%; padding: 8px 14px; margin: 6px 0;
-            background: #2ec5ad; color: #fff; border: none; border-radius: 4px;
+            background: #36c9b0; color: #fff; border: none; border-radius: 4px;
             cursor: pointer; font-size: 13px; transition: background .2s;
         }
         #panel button:hover { background: #26a08d; }
@@ -27,10 +27,10 @@
         #queryPanel {
             position: absolute; top: 70px; right: 16px; z-index: 10;
             background: rgba(11, 30, 61, .92); color: #fff;
-            padding: 16px 20px; border-radius: 8px; border: 1px solid #2ec5ad;
+            padding: 16px 20px; border-radius: 8px; border: 1px solid #36c9b0;
             min-width: 300px; font-size: 13px;
         }
-        #queryPanel h3 { color: #2ec5ad; font-size: 15px; margin-bottom: 12px; }
+        #queryPanel h3 { color: #36c9b0; font-size: 15px; margin-bottom: 12px; }
         #queryInput {
             width: 100%; padding: 8px; background: rgba(255,255,255,.1);
             border: 1px solid #526f82; color: #fff; border-radius: 4px; font-size: 13px;
@@ -39,7 +39,7 @@
             margin-top: 10px; padding: 10px;
             background: rgba(0,0,0,.3); border-radius: 4px;
             font-family: 'Consolas', monospace; font-size: 12px;
-            min-height: 60px; white-space: pre-wrap; color: #8ecae6;
+            min-height: 60px; white-space: pre-wrap; color: #a8d4ee;
         }
     </style>
 </head>
@@ -69,7 +69,7 @@
     <div id="queryPanel">
         <h3>查询实体</h3>
         <input id="queryInput" type="text" placeholder="输入实体 ID，如 station-01">
-        <button onclick="queryById()" style="margin-top:8px;width:100%;padding:8px;background:#2ec5ad;color:#fff;border:none;border-radius:4px;cursor:pointer;">getById 查询</button>
+        <button onclick="queryById()" style="margin-top:8px;width:100%;padding:8px;background:#36c9b0;color:#fff;border:none;border-radius:4px;cursor:pointer;">getById 查询</button>
         <div id="queryResult">等待查询…</div>
     </div>
     <div id="status">当前实体数：0</div>
@@ -109,7 +109,7 @@
         ];
 
         const statusColors = {
-            '正常': Cesium.Color.fromCssColorString('#2ec5ad'),
+            '正常': Cesium.Color.fromCssColorString('#36c9b0'),
             '告警': Cesium.Color.fromCssColorString('#ffc107'),
             '离线': Cesium.Color.fromCssColorString('#e74c3c')
         };
