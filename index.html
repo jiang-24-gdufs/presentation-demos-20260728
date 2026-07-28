@@ -188,68 +188,78 @@
     <div class="section-tag">Module 01</div>
     <h2>数据类型<span>全景图</span></h2>
 
+    <h3>理解地形与影像</h3>
+    <div class="card-grid">
+        <div class="card">
+            <h4>地形（Terrain）= 椭球体的几何形状</h4>
+            <p>地形数据定义地表的<strong>高程起伏</strong>（DEM），让平坦的椭球面变成有山有谷的真实地形。没有地形时，地球是一个光滑的数学椭球面。</p>
+            <p style="color:var(--text-dim);font-size:13px;">类比：一张揉皱的白纸（只有形状，没有颜色）。</p>
+        </div>
+        <div class="card">
+            <h4>影像（Imagery）= 贴在地形上的纹理</h4>
+            <p>影像数据是覆盖在地形表面上的<strong>图片瓦片</strong>（卫星照片、路网图等），让地球表面"有颜色"。影像本身没有高度，只是贴图。</p>
+            <p style="color:var(--text-dim);font-size:13px;">类比：把一张地图贴在揉皱的纸上。</p>
+        </div>
+    </div>
+    <p style="font-size:14px;color:var(--text-dim);margin-bottom:24px;">最终效果 = 椭球体基底 + 地形高程起伏（几何）+ 影像纹理贴图（外观）= 你看到的三维地球。</p>
+
     <table>
         <thead>
-            <tr><th>数据类型</th><th>常见格式</th><th>CDN Cesium（社区版）API</th><th>超图 Cesium API</th><th>适用场景</th></tr>
+            <tr><th>数据类型</th><th>常见格式</th><th>通用加载 API（URL）</th><th>适用场景</th></tr>
         </thead>
         <tbody>
             <tr>
                 <td><strong>影像</strong></td>
-                <td>WMS / WMTS / TMS / Bing / Google</td>
-                <td><code>IonImageryProvider.fromAssetId()</code></td>
-                <td><code>new IonImageryProvider({assetId})</code></td>
+                <td>WMS / WMTS / TMS / XYZ</td>
+                <td><code>new WebMapServiceImageryProvider({url})</code><br><code>new UrlTemplateImageryProvider({url})</code><br><code>new WebMapTileServiceImageryProvider({url})</code></td>
                 <td>底图、卫星图、行政区划</td>
             </tr>
             <tr>
                 <td><strong>地形</strong></td>
-                <td>Quantized-Mesh / Heightmap / STK</td>
-                <td><code>CesiumTerrainProvider.fromIonAssetId()</code></td>
-                <td><code>createWorldTerrain()</code></td>
+                <td>Quantized-Mesh / Heightmap</td>
+                <td><code>CesiumTerrainProvider.fromUrl(url)</code><br><code>new CesiumTerrainProvider({url})</code></td>
                 <td>地形起伏、水面高程</td>
             </tr>
             <tr>
                 <td><strong>矢量</strong></td>
                 <td>GeoJSON / KML / CZML</td>
-                <td colspan="2" style="text-align:center;"><code>GeoJsonDataSource</code> / <code>KmlDataSource</code>（两版通用）</td>
+                <td><code>GeoJsonDataSource.load(url)</code><br><code>KmlDataSource.load(url)</code></td>
                 <td>边界、路径、标注</td>
             </tr>
             <tr>
                 <td><strong>3D Tiles</strong></td>
                 <td>b3dm / i3dm / pnts / glTF</td>
-                <td><code>Cesium3DTileset.fromIonAssetId()</code></td>
-                <td><code>new Cesium3DTileset({url})</code></td>
+                <td><code>Cesium3DTileset.fromUrl(url)</code><br><code>new Cesium3DTileset({url})</code></td>
                 <td>倾斜摄影、BIM、点云</td>
             </tr>
             <tr>
                 <td><strong>模型</strong></td>
                 <td>glTF / glb</td>
-                <td><code>Model.fromGltfAsync()</code></td>
-                <td><code>Model.fromGltf()</code></td>
+                <td><code>Model.fromGltfAsync({url})</code><br>Entity: <code>{model: {uri: url}}</code></td>
                 <td>单体建筑、设备、车辆</td>
             </tr>
             <tr>
                 <td><strong>S3M</strong></td>
                 <td>S3M / S3MB（超图专有）</td>
-                <td style="color:var(--text-dim);">— 不支持 —</td>
-                <td><code>scene.addS3MTilesLayerByScp()</code></td>
+                <td><code>scene.addS3MTilesLayerByScp(url)</code><br><span style="color:var(--text-dim);">仅超图版支持</span></td>
                 <td>超图 iServer 三维服务</td>
             </tr>
         </tbody>
     </table>
 
-    <div class="alert alert-danger">
-        <span class="alert-icon">⛔</span>
-        <div><strong>关键警示：</strong>倾斜摄影数据必须通过 3D Tiles 流式加载，不可一次性全量读入内存。典型倾斜数据量可达数十 GB，违反此原则将导致浏览器崩溃。</div>
-    </div>
-
     <div class="alert alert-warn">
         <span class="alert-icon">⚠</span>
-        <div><strong>版本差异：</strong>超图 Cesium 基于较早的 Cesium 内核，<strong>不支持</strong> <code>fromIonAssetId()</code> / <code>fromAssetId()</code> 等静态工厂方法（1.104+ 新增）。使用超图版本时必须改用旧版构造函数 API，否则会报 <code>TypeError: ... is not a function</code>。</div>
+        <div><strong>Ion 平台 vs 通用 API：</strong>上表展示的是<strong>加载任意数据服务</strong>的通用 API。如果你的数据托管在 Cesium Ion 平台，可以使用 <code>fromIonAssetId()</code> / <code>IonImageryProvider.fromAssetId()</code> 等便捷方法，但这些<strong>仅适用于 Ion 平台数据</strong>，不是通用加载 API。超图 Cesium 不支持这些静态工厂方法（1.104+ 新增）。</div>
+    </div>
+
+    <div class="alert alert-danger">
+        <span class="alert-icon">⛔</span>
+        <div><strong>关键警示：</strong>倾斜摄影数据必须通过 3D Tiles 流式加载，不可一次性全量读入内存。典型倾斜数据量可达数十 GB，违反此原则将导致浏览器崩溃。OBJ 格式 Cesium 不直接支持，需先转为 glTF/glb。</div>
     </div>
 
     <div class="alert alert-info">
         <span class="alert-icon">💡</span>
-        <div>超图 Cesium 额外支持 S3M / S3MB 格式，通过 <code>S3MTilesLayer</code> 加载 iServer 发布的三维服务。这是超图版本独有的能力，CDN 社区版不支持。</div>
+        <div>超图 Cesium 额外支持 S3M / S3MB 格式，通过 <code>S3MTilesLayer</code> 加载 iServer 发布的三维服务。CDN 社区版不支持。</div>
     </div>
 
     <a class="demo-btn" href="demo-01-loading.html" target="_blank">打开示例 → demo-01-loading.html</a>
@@ -286,21 +296,43 @@
         </div>
     </div>
 
-    <h3>选型决策树：Entity vs Primitive</h3>
-    <div class="decision">
-        <div class="q">问：你的场景中需要渲染多少个同类对象？</div>
-        <div class="branch">
-            <div class="yes">
-                <strong>≤ 100 个</strong><br>
-                → 使用 <code>Entity API</code><br>
-                <span style="color:var(--text-dim);font-size:12px;">代码简洁、支持属性绑定、自动管理生命周期</span>
-            </div>
-            <div class="no">
-                <strong>&gt; 100 个</strong><br>
-                → 改用 <code>Primitive API</code><br>
-                <span style="color:var(--text-dim);font-size:12px;">直接操作 GPU 缓冲、批量渲染、性能提升 10x+</span>
-            </div>
+    <h3>实际业务中的 Entity 用法</h3>
+    <div class="card-grid">
+        <div class="card">
+            <h4>IoT 设备监控</h4>
+            <p>用 <code>billboard</code> 展示设备图标，<code>label</code> 显示实时状态（正常/告警/离线），通过 <code>properties</code> 挂载设备 ID + 最后上报时间，点击弹出详情。颜色随状态动态变化。</p>
         </div>
+        <div class="card">
+            <h4>管线/路径标注</h4>
+            <p>用 <code>polyline</code> 绘制管线路径，搭配 <code>label</code> 标注管线名称和材质。可通过 <code>PolylineGlowMaterialProperty</code> 设置发光效果，模拟流向动画。</p>
+        </div>
+        <div class="card">
+            <h4>区域围栏 / 地块划分</h4>
+            <p>用 <code>polygon</code> + 半透明填充绘制地块边界，<code>polyline</code> 高亮边界线。适合城市规划、应急管理中的区域可视化。</p>
+        </div>
+        <div class="card">
+            <h4>轨迹回放</h4>
+            <p>结合 <code>SampledPositionProperty</code> 实现时间轴上的位置动画，用于车辆 GPS 轨迹、无人机航迹回放。配合 <code>PathGraphics</code> 显示历史路径。</p>
+        </div>
+    </div>
+
+    <h3>Entity vs Primitive 对比</h3>
+    <table>
+        <thead><tr><th>对比维度</th><th>Entity API</th><th>Primitive API</th></tr></thead>
+        <tbody>
+            <tr><td><strong>抽象层级</strong></td><td>高层封装，面向业务对象</td><td>底层接口，面向渲染管线</td></tr>
+            <tr><td><strong>性能上限</strong></td><td>适合 &lt; 100 个对象</td><td>轻松支撑数千~数万个对象</td></tr>
+            <tr><td><strong>属性绑定</strong></td><td>内置 <code>properties</code>，直接挂业务数据</td><td>无内置属性，需自行维护映射</td></tr>
+            <tr><td><strong>拾取支持</strong></td><td><code>scene.pick</code> 直接返回 Entity</td><td>需额外处理，返回 Primitive 引用</td></tr>
+            <tr><td><strong>动画/时间</strong></td><td>内置 <code>SampledProperty</code>、时间轴联动</td><td>需手动在 <code>preRender</code> 回调中更新</td></tr>
+            <tr><td><strong>典型 API</strong></td><td><code>viewer.entities.add()</code></td><td><code>scene.primitives.add(new PointPrimitiveCollection())</code></td></tr>
+            <tr><td><strong>适用场景</strong></td><td>标注点、InfoBox、轨迹回放、区域绘制</td><td>热力图、大规模标注、粒子效果、自定义 Shader</td></tr>
+        </tbody>
+    </table>
+
+    <div class="alert alert-info">
+        <span class="alert-icon">💡</span>
+        <div><strong>为什么需要两套 API？</strong>Entity 是对 Primitive 的封装——它在内部将你的描述性参数（"在这个经纬度画一个红点"）转译为底层 GPU 指令。这层抽象带来便利但也带来开销。当对象数量少时开销可忽略，当对象数量多时开销会成为帧率瓶颈，此时应绕过封装直接使用 Primitive。</div>
     </div>
 
     <div class="alert alert-danger">

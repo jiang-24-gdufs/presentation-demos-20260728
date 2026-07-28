@@ -11,8 +11,8 @@
         <script src="../Build/Cesium/Cesium.js"></script>
         注意：超图版本不支持 fromIonAssetId / fromAssetId 等静态工厂方法，需改用旧版构造函数 API。
     -->
-    <link href="https://cesium.com/downloads/cesiumjs/releases/1.119/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
-    <script src="https://cesium.com/downloads/cesiumjs/releases/1.119/Build/Cesium/Cesium.js"></script>
+    <link href="https://cesium.com/downloads/cesiumjs/releases/1.143/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+    <script src="https://cesium.com/downloads/cesiumjs/releases/1.143/Build/Cesium/Cesium.js"></script>
     <script src="shared-config.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -92,14 +92,21 @@
         <label><input type="checkbox" id="chkTerrain" checked> Cesium World Terrain</label>
         <div class="desc">Asset ID: 1 · Quantized-Mesh 格式</div>
 
-        <h3>🏗 3D Tiles</h3>
+        <h3>🏗 3D Tiles（Ion 平台）</h3>
         <label><input type="checkbox" id="chkOSM"> Cesium OSM Buildings</label>
-        <div class="desc">Asset ID: 96188 · 全球建筑白模</div>
+        <div class="desc">Ion Asset 96188 · 全球建筑白模</div>
         <label><input type="checkbox" id="chkGoogle3D"> Google Photorealistic 3D Tiles</label>
-        <div class="desc">Asset ID: 2275207 · 全球真实感三维</div>
+        <div class="desc">Ion Asset 2275207 · 全球真实感三维</div>
+
+        <hr class="divider">
+        <h3>📦 模型与格式加载（URL）</h3>
+        <label><input type="checkbox" id="chkGltf"> glTF 模型（公开样本）</label>
+        <div class="desc">Khronos CesiumMilkTruck · Entity API</div>
+        <label><input type="checkbox" id="chkGltf2"> glTF 模型 · Duck</label>
+        <div class="desc">Khronos Duck · Primitive API</div>
 
         <div class="warning">
-            ⚠ 倾斜摄影 / 3D Tiles 必须流式加载，不可全量读入内存。Google Photorealistic 数据量极大，加载可能较慢。
+            ⚠ 倾斜摄影 / 3D Tiles 必须流式加载，不可全量读入内存。OBJ 格式不被 Cesium 直接支持，需先转为 glTF/glb。
         </div>
     </div>
 
@@ -209,6 +216,71 @@
                     viewer.scene.primitives.remove(google3dTileset);
                     google3dTileset = null;
                     setStatus('Google 3D Tiles 已移除');
+                }
+            });
+
+            // ── glTF 模型：CesiumMilkTruck（Entity API 方式）──
+            let gltfEntity = null;
+            document.getElementById('chkGltf').addEventListener('change', function () {
+                if (this.checked) {
+                    setStatus('正在加载 glTF 模型（CesiumMilkTruck）…');
+                    var modelUrl = 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/CesiumMilkTruck/glTF-Binary/CesiumMilkTruck.glb';
+                    gltfEntity = viewer.entities.add({
+                        name: 'CesiumMilkTruck',
+                        position: Cesium.Cartesian3.fromDegrees(-74.006, 40.7128, 0),
+                        model: {
+                            uri: modelUrl,
+                            minimumPixelSize: 64,
+                            maximumScale: 200,
+                            heightReference: Cesium.HeightReference.CLAMP_TO_GROUND
+                        },
+                        properties: { source: 'Khronos glTF-Sample-Assets', format: 'glb' }
+                    });
+                    viewer.flyTo(gltfEntity, {
+                        offset: new Cesium.HeadingPitchRange(0, Cesium.Math.toRadians(-30), 150)
+                    });
+                    setStatus('glTF 模型已加载（Entity API · 纽约）');
+                } else if (gltfEntity) {
+                    viewer.entities.remove(gltfEntity);
+                    gltfEntity = null;
+                    setStatus('glTF 模型已移除');
+                }
+            });
+
+            // ── glTF 模型：Duck（Primitive API / Model.fromGltfAsync 方式）──
+            let gltfPrimitive = null;
+            document.getElementById('chkGltf2').addEventListener('change', async function () {
+                if (this.checked) {
+                    setStatus('正在加载 glTF 模型（Duck · Primitive API）…');
+                    try {
+                        var position = Cesium.Cartesian3.fromDegrees(116.39, 39.91, 10);
+                        var hpr = new Cesium.HeadingPitchRoll(0, 0, 0);
+                        var modelMatrix = Cesium.Transforms.headingPitchRollToFixedFrame(position, hpr);
+
+                        gltfPrimitive = await Cesium.Model.fromGltfAsync({
+                            url: 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/Duck/glTF-Binary/Duck.glb',
+                            modelMatrix: modelMatrix,
+                            minimumPixelSize: 64,
+                            maximumScale: 500
+                        });
+                        viewer.scene.primitives.add(gltfPrimitive);
+                        viewer.camera.flyTo({
+                            destination: Cesium.Cartesian3.fromDegrees(116.39, 39.905, 300),
+                            orientation: {
+                                heading: 0,
+                                pitch: Cesium.Math.toRadians(-45),
+                                roll: 0
+                            }
+                        });
+                        setStatus('glTF 模型已加载（Primitive API · 北京）');
+                    } catch (e) {
+                        setStatus('glTF (Primitive) 加载失败: ' + e.message);
+                        this.checked = false;
+                    }
+                } else if (gltfPrimitive) {
+                    viewer.scene.primitives.remove(gltfPrimitive);
+                    gltfPrimitive = null;
+                    setStatus('glTF 模型已移除');
                 }
             });
         })();

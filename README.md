@@ -12,16 +12,17 @@
 | `demo-04-debug.html` | 本地超图版 | 模块四：调试与体检（Inspector + 自查表） |
 | `demo-05-coordinates.html` | CDN 社区版 | 模块五：坐标系统与空间计算（WGS84 ⇄ Cartesian3 + 实时坐标跟踪） |
 
-## ⚠ CDN 版与超图版的区别
+## ⚠ 通用 API vs Ion 平台 API vs 超图版本
 
-| | CDN 社区版 (≥ 1.104) | 本地超图 Cesium |
-|---|---|---|
-| **3D Tiles 加载** | `Cesium3DTileset.fromIonAssetId()` | `new Cesium3DTileset({url})` |
-| **影像加载** | `IonImageryProvider.fromAssetId()` | `new IonImageryProvider({assetId})` |
-| **地形加载** | `CesiumTerrainProvider.fromIonAssetId()` | `createWorldTerrain()` |
-| **S3M 数据** | 不支持 | `scene.addS3MTilesLayerByScp()` |
+| 数据类型 | 通用加载 API（任意数据服务） | Ion 平台快捷 API（仅 Ion 数据） | 超图版本 |
+|---|---|---|---|
+| **3D Tiles** | `Cesium3DTileset.fromUrl(url)` | `Cesium3DTileset.fromIonAssetId()` | `new Cesium3DTileset({url})` |
+| **影像** | `new WebMapServiceImageryProvider({url})` | `IonImageryProvider.fromAssetId()` | 同通用 API |
+| **地形** | `CesiumTerrainProvider.fromUrl(url)` | `CesiumTerrainProvider.fromIonAssetId()` | `createWorldTerrain()` |
+| **模型** | `Model.fromGltfAsync({url})` | — | `Model.fromGltf({url})` |
+| **S3M** | 不支持 | — | `scene.addS3MTilesLayerByScp()` |
 
-超图版本基于较早的 Cesium 内核，**不支持** `fromIonAssetId` / `fromAssetId` 等静态工厂方法。混用会报 `TypeError: ... is not a function`。
+`fromIonAssetId()` / `fromAssetId()` **仅用于加载 Cesium Ion 平台数据**，不是通用加载 API。超图版本基于较早 Cesium 内核，不支持这些静态工厂方法，混用会报 `TypeError: ... is not a function`。
 
 ## 运行方式
 
@@ -44,8 +45,8 @@ python -m http.server 8080
 使用 CDN 的示例（demo-01 / demo-03 / demo-05）引用的是：
 
 ```html
-<link href="https://cesium.com/downloads/cesiumjs/releases/1.119/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
-<script src="https://cesium.com/downloads/cesiumjs/releases/1.119/Build/Cesium/Cesium.js"></script>
+<link href="https://cesium.com/downloads/cesiumjs/releases/1.143/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+<script src="https://cesium.com/downloads/cesiumjs/releases/1.143/Build/Cesium/Cesium.js"></script>
 ```
 
 使用本地超图版本的示例（demo-02 / demo-04）引用的是：

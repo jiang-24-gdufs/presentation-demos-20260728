@@ -68,4 +68,61 @@ VM217:2 Uncaught TypeError: Cesium.Cesium3DTileset.fromIonAssetId is not a funct
 1. 新增公用的modulees来加载公用的依赖和配置token，并引入到各示例中，避免出现报错：
 "{\"code\":\"INVALID_TOKEN\",\"message\":\"Invalid access token\"}"
 2. 坐标系统中，需要说明IDesktop ISERVER 和 实际超图加载的整个常用坐标系；好像还用到过3857坐标系，解释不同的坐标系有什么区别，为什么有这么多坐标系
-3. 
+
+---
+
+1. loading文档纠错：
+- API比对中，fromAssetId是加载Cesium ION平台的数据时使用的API，而不是核心加载业务相关的数据服务时的Cesium API，正确纠错；
+- 补充理解地形+全球影像的实际含义说明: 椭球体的几何形状 + 纹理（贴地）
+
+2. 新增加载示例，倾斜摄影/点云/obj/gltf，尝试找到公开的服务来作为加载的示例；正确使用Cesium API来加载；加载图层后需要正确locate，飞向加载的图层
+3. 添加更多Entity在实际业务上使用的情况说明，补充更多case
+4. 增加Primitive VS Entity的对比说明，需要说明二者的区别和使用场景，以及为什么要使用这两个API 
+
+---
+
+补充倾斜摄影添加的ION（参考链接https://sandcastle.cesium.com/资源）code
+```
+const viewer = new Cesium.Viewer("cesiumContainer", {
+  terrain: Cesium.Terrain.fromWorldTerrain(),
+});
+
+try {
+  const tileset = await Cesium.Cesium3DTileset.fromIonAssetId(40866);
+  viewer.scene.primitives.add(tileset);
+  viewer.zoomTo(tileset);
+} catch (error) {
+  console.log(`Error loading tileset: ${error}`);
+}
+
+```
+
+点云
+```
+import * as Cesium from "cesium";
+
+//Point Cloud by Prof. Peter Allen, Columbia University Robotics Lab. Scanning by Alejandro Troccoli and Matei Ciocarlie.
+const viewer = new Cesium.Viewer("cesiumContainer", {
+  terrain: Cesium.Terrain.fromWorldTerrain(),
+});
+
+viewer.scene.camera.setView({
+  destination: new Cesium.Cartesian3(
+    4401744.644145314,
+    225051.41078911052,
+    4595420.374784433,
+  ),
+  orientation: new Cesium.HeadingPitchRoll(
+    5.646733805039757,
+    -0.276607153839886,
+    6.281110875400085,
+  ),
+});
+
+try {
+  const tileset = await Cesium.Cesium3DTileset.fromIonAssetId(16421);
+  viewer.scene.primitives.add(tileset);
+} catch (error) {
+  console.log(`Error loading tileset: ${error}`);
+}
+```
