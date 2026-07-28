@@ -4,8 +4,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>模块二：Entity API</title>
-    <link href="../Build/Cesium/Widgets/widgets.css" rel="stylesheet">
-    <script src="../Build/Cesium/Cesium.js"></script>
+    <link href="https://cesium.com/downloads/cesiumjs/releases/1.143/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+    <script src="https://cesium.com/downloads/cesiumjs/releases/1.143/Build/Cesium/Cesium.js"></script>
     <script src="shared-config.js"></script>
     <link href="shared-style.css" rel="stylesheet">
     <style>
@@ -45,7 +45,7 @@
 </head>
 <body>
     <div id="header">
-        <h1>模块二：<span>Entity API</span></h1>
+        <h1>模块二：<span>Entity API</span><span class="badge">超图 Cesium</span></h1>
         <a href="index.html">← 返回讲解文档</a>
     </div>
     <div id="cesiumContainer"></div>
@@ -323,7 +323,7 @@
                 path: { resolution: 1, material: new Cesium.PolylineGlowMaterialProperty({ glowPower: 0.15, color: Cesium.Color.LIME }), width: 4 },
                 properties: { type: '巡检车辆', plateNo: '京A12345' }
             });
-            viewer.zoomTo(entities,new Cesium.HeadingPitchRange(0, -5, 10000));
+            viewer.zoomTo(entities, new Cesium.HeadingPitchRange(0, Cesium.Math.toRadians(-45), 10000));
             updateCount();
         }
 

@@ -162,3 +162,19 @@ Select "Montreal Point Cloud"	28945	Montreal Point Cloud	3D Tiles	May 25 2019 12
 2. 我的意思是示例1和debug 示例，直接公用一个html demo，而不是copy一份副本；正确暴露viewer变量到全局；通过链接正确关联即可
 3. 坐标系统与空间计算这个demo，考虑增加proj4来对不同的坐标系如WGS84 和 EPSG：3857 的坐标数据做转换
 4. 现在讲解内容总结很不到位，需要重新润色打磨
+
+---
+两个调试器都集成到文档中，超图的SuperMap3D.Cesium3DTilesInspector也集成比对，但不加载到场景示例中。
+DEBUG demo集成两个调试器:
+```
+// 接入通用场景调试器 (Cesium Inspector)
+viewer.extend(Cesium.viewerCesiumInspectorMixin);
+
+// 接入3D Tiles专用调试器 (Cesium3DTilesInspector)
+viewer.extend(Cesium.viewerCesium3DTilesInspectorMixin);
+```
+
+这个demo html集成时是否可以打开已经打开的tab，而不是再打开一个新的页面。好像可以使用window.open来控制吧
+
+---
+坐标系统与空间计算，要精简布局；默认高度设置43.5米，而不是0；坐标系下拉框option背景色为白色，字体也为白色，调整以增加对比度；

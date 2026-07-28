@@ -263,7 +263,7 @@
         <div>超图 Cesium 额外支持 S3M / S3MB 格式，通过 <code>S3MTilesLayer</code> 加载 iServer 发布的三维服务。CDN 社区版不支持。</div>
     </div>
 
-    <a class="demo-btn" href="demo-01-loading.html" target="_blank">打开示例 → demo-01-loading.html</a>
+    <a class="demo-btn" href="demo-01-loading.html" target="cesium-demo">打开示例 → demo-01-loading.html</a>
 </section>
 
 <!-- ════════════════════ 模块二 ════════════════════ -->
@@ -531,7 +531,7 @@
         <div>坐标转换 API（<code>Cartesian3</code>、<code>Cartographic</code>、<code>Math</code>）属于 Cesium 核心模块，CDN 版和超图版均可使用，无版本差异。</div>
     </div>
 
-    <a class="demo-btn" href="demo-05-coordinates.html" target="_blank">打开示例 → demo-05-coordinates.html</a>
+    <a class="demo-btn" href="demo-04-coordinates.html" target="cesium-demo">打开示例 → demo-04-coordinates.html</a>
 </section>
 
 <!-- ════════════════════ 模块五 ════════════════════ -->
@@ -543,8 +543,12 @@
     <h3>核心调试工具</h3>
     <div class="card-grid">
         <div class="card">
-            <h4>Cesium Inspector</h4>
-            <p>通过 <code>viewer.extend(Cesium.viewerCesiumInspectorMixin)</code> 开启，可查看地形渲染、瓦片加载状态、包围盒、深度与拾取信息。</p>
+            <h4>Cesium Inspector（通用场景）</h4>
+            <p><code>viewer.extend(Cesium.viewerCesiumInspectorMixin)</code><br>查看地形渲染、深度缓冲、拾取信息、Primitive 包围球。<strong>通用调试首选。</strong></p>
+        </div>
+        <div class="card">
+            <h4>3D Tiles Inspector（瓦片专用）</h4>
+            <p><code>viewer.extend(Cesium.viewerCesium3DTilesInspectorMixin)</code><br>专门针对 3D Tiles 数据集：查看瓦片树、LOD 层级、内存占用、包围盒可视化。</p>
         </div>
         <div class="card">
             <h4>浏览器 Network 面板</h4>
@@ -554,6 +558,11 @@
             <h4>Console 调试</h4>
             <p>使用 <code>viewer.entities.values</code> 遍历实体列表；<code>viewer.scene.primitives</code> 查看 Primitive 集合；<code>viewer.camera</code> 获取相机位姿。</p>
         </div>
+    </div>
+
+    <div class="alert alert-info">
+        <span class="alert-icon">💡</span>
+        <div><strong>超图版本差异：</strong>超图 Cesium 中对应的调试器为 <code>SuperMap3D.Cesium3DTilesInspector</code>，用法类似但类名不同。如果你使用超图 SDK，Inspector 的接入方式需参考超图文档。CDN 社区版和超图版的 Inspector 功能基本一致，但内部实现和挂载方式有差异。</div>
     </div>
 
     <h3>常见症状自查表</h3>
@@ -571,7 +580,7 @@
         </tbody>
     </table>
 
-    <a class="demo-btn" href="demo-01-loading.html?debug" target="_blank">打开示例 → demo-01-loading.html?debug</a>
+    <a class="demo-btn" href="demo-01-loading.html?debug" target="cesium-demo">打开示例 → demo-01-loading.html?debug</a>
 </section>
 
 <!-- ════════════════════ 总结 ════════════════════ -->
@@ -606,11 +615,11 @@
     <table>
         <thead><tr><th>文件</th><th>对应模块</th><th>核心演示</th></tr></thead>
         <tbody>
-            <tr><td><a href="demo-01-loading.html" target="_blank" style="color:var(--accent);">demo-01-loading.html</a></td><td>数据类型</td><td>影像 + 地形 + 3D Tiles 叠加加载</td></tr>
-            <tr><td><a href="demo-02-entity.html" target="_blank" style="color:var(--accent);">demo-02-entity.html</a></td><td>Entity API</td><td>实体增删改查 + 属性绑定</td></tr>
-            <tr><td><a href="demo-03-pick.html" target="_blank" style="color:var(--accent);">demo-03-pick.html</a></td><td>属性查询</td><td>Entity / 3D Tiles 拾取分支</td></tr>
-            <tr><td><a href="demo-05-coordinates.html" target="_blank" style="color:var(--accent);">demo-05-coordinates.html</a></td><td>坐标系统</td><td>WGS84 ⇄ Cartesian3 互转 + 实时坐标跟踪</td></tr>
-            <tr><td><a href="demo-01-loading.html?debug" target="_blank" style="color:var(--accent);">demo-01-loading.html?debug</a></td><td>调试体检</td><td>在示例一场景上启用 Inspector / FPS / Console 调试</td></tr>
+            <tr><td><a href="demo-01-loading.html" target="cesium-demo" style="color:var(--accent);">demo-01-loading.html</a></td><td>数据类型</td><td>影像 + 地形 + 3D Tiles 叠加加载</td></tr>
+            <tr><td><a href="demo-02-entity.html" target="cesium-demo" style="color:var(--accent);">demo-02-entity.html</a></td><td>Entity API</td><td>实体增删改查 + 属性绑定</td></tr>
+            <tr><td><a href="demo-03-pick.html" target="cesium-demo" style="color:var(--accent);">demo-03-pick.html</a></td><td>属性查询</td><td>Entity / 3D Tiles 拾取分支</td></tr>
+            <tr><td><a href="demo-04-coordinates.html" target="cesium-demo" style="color:var(--accent);">demo-04-coordinates.html</a></td><td>坐标系统</td><td>WGS84 ⇄ Cartesian3 互转 + 实时坐标跟踪</td></tr>
+            <tr><td><a href="demo-01-loading.html?debug" target="cesium-demo" style="color:var(--accent);">demo-01-loading.html?debug</a></td><td>调试体检</td><td>在示例一场景上启用 Inspector / FPS / Console 调试</td></tr>
         </tbody>
     </table>
 </section>

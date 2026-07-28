@@ -4,15 +4,6 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>模块一：数据类型与加载</title>
-    <!--
-        ⚠ 本示例使用 CDN 版 Cesium（社区开源版）。
-        如需切换为本地超图 Cesium，请替换下方两行引用为：
-        <link href="../Build/Cesium/Widgets/widgets.css" rel="stylesheet">
-        <script src="../Build/Cesium/Cesium.js"></script>
-        注意：超图版本不支持 fromIonAssetId / fromAssetId 等静态工厂方法，需改用旧版构造函数 API。
-
-        调试模式：URL 添加 ?debug 参数即可启用调试工具面板（Inspector / FPS / 线框 / Console 打印）。
-    -->
     <link href="https://cesium.com/downloads/cesiumjs/releases/1.143/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
     <script src="https://cesium.com/downloads/cesiumjs/releases/1.143/Build/Cesium/Cesium.js"></script>
     <script src="shared-config.js"></script>
@@ -99,6 +90,7 @@
     <div id="debugPopup">
         <h4>调试工具</h4>
         <button onclick="toggleInspector()">Cesium Inspector</button>
+        <button onclick="toggle3DTilesInspector()">3D Tiles Inspector</button>
         <button onclick="toggleFPS()">帧率 (FPS) 显示</button>
         <button onclick="toggleWireframe()">线框模式</button>
         <hr>
@@ -131,6 +123,14 @@
         window.toggleDebugPopup = function () {
             debugPopupEl.style.display = debugPopupEl.style.display === 'none' ? 'block' : 'none';
         };
+        function noop() {}
+        window.toggleInspector = window.toggleInspector || noop;
+        window.toggle3DTilesInspector = window.toggle3DTilesInspector || noop;
+        window.toggleFPS = window.toggleFPS || noop;
+        window.toggleWireframe = window.toggleWireframe || noop;
+        window.printEntityList = window.printEntityList || noop;
+        window.printSceneInfo = window.printSceneInfo || noop;
+        window.printTilesetStats = window.printTilesetStats || noop;
 
         (async function () {
             var viewer = new Cesium.Viewer('cesiumContainer', {
@@ -344,6 +344,17 @@
                         setStatus('Cesium Inspector 已启用');
                     }
                     var el = document.querySelector('.cesium-cesiumInspector');
+                    if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
+                };
+
+                var tiles3dInspectorLoaded = false;
+                window.toggle3DTilesInspector = function () {
+                    if (!tiles3dInspectorLoaded) {
+                        viewer.extend(Cesium.viewerCesium3DTilesInspectorMixin);
+                        tiles3dInspectorLoaded = true;
+                        setStatus('3D Tiles Inspector 已启用 — 请先加载一个 3D Tiles 数据集');
+                    }
+                    var el = document.querySelector('.cesium-3DTilesInspector');
                     if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
                 };
 

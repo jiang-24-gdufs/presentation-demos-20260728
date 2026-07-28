@@ -10,7 +10,7 @@
 | `demo-02-entity.html` | 本地超图版 | 模块二：Entity API（增删改查 + 属性绑定） |
 | `demo-03-pick.html` | CDN 社区版 | 模块三：属性查询（Entity / 模型 / 3D Tiles 拾取 + 地理坐标查询） |
 | `demo-04-debug.html` | 本地超图版 | 模块四：调试与体检（Inspector + 自查表） |
-| `demo-05-coordinates.html` | CDN 社区版 | 模块五：坐标系统与空间计算（WGS84 ⇄ Cartesian3 + 实时坐标跟踪） |
+| `demo-04-coordinates.html` | CDN 社区版 | 模块五：坐标系统与空间计算（WGS84 ⇄ Cartesian3 + 实时坐标跟踪） |
 
 ## ⚠ 通用 API vs Ion 平台 API vs 超图版本
 
