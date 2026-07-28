@@ -11,11 +11,12 @@ html, body { width: 100%; height: 100%; overflow: hidden; font-family: 'Segoe UI
 #header {
     position: absolute; top: 0; left: 0; right: 0; z-index: 10;
     background: linear-gradient(135deg, #0b1e3d 0%, #163a5f 100%);
-    padding: 14px 24px;
+    padding: 12px 24px;
     display: flex; align-items: center; justify-content: space-between;
     border-bottom: 2px solid #2ec5ad;
+    box-shadow: 0 2px 12px rgba(0,0,0,.3);
 }
-#header h1 { color: #fff; font-size: 20px; font-weight: 600; }
+#header h1 { color: #fff; font-size: 18px; font-weight: 600; letter-spacing: .3px; }
 #header h1 span { color: #2ec5ad; }
 #header .badge {
     background: #2ec5ad; color: #0b1e3d; font-size: 11px; font-weight: 700;
@@ -74,11 +75,11 @@ html, body { width: 100%; height: 100%; overflow: hidden; font-family: 'Segoe UI
 /* ── Coord Bar (底部相机坐标) ── */
 #coordBar {
     position: absolute; bottom: 0; left: 0; right: 0; z-index: 10;
-    background: rgba(10, 22, 40, .92);
-    border-top: 1px solid rgba(46,197,173,.3);
-    padding: 6px 24px;
+    background: rgba(8, 18, 34, .94);
+    border-top: 1px solid rgba(46,197,173,.2);
+    padding: 5px 24px;
     display: flex; gap: 24px; align-items: center;
-    font-family: 'Consolas', monospace; font-size: 12px; color: #8ba3bf;
+    font-family: 'Consolas', monospace; font-size: 11.5px; color: #8ba3bf;
 }
 #coordBar .coord-group { display: flex; align-items: center; gap: 6px; }
 #coordBar .coord-label { color: #2ec5ad; font-weight: 600; font-size: 11px; margin-right: 6px; }
