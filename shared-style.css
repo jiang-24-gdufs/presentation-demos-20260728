@@ -1,0 +1,130 @@
+/* ═══════════════════════════════════════════════
+   Cesium Demo 公共样式 — 所有示例页面共享
+   ═══════════════════════════════════════════════ */
+
+/* Base Reset */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { width: 100%; height: 100%; overflow: hidden; font-family: 'Segoe UI', system-ui, sans-serif; }
+#cesiumContainer { width: 100%; height: 100%; }
+
+/* ── Header ── */
+#header {
+    position: absolute; top: 0; left: 0; right: 0; z-index: 10;
+    background: linear-gradient(135deg, #0b1e3d 0%, #163a5f 100%);
+    padding: 14px 24px;
+    display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 2px solid #2ec5ad;
+}
+#header h1 { color: #fff; font-size: 20px; font-weight: 600; }
+#header h1 span { color: #2ec5ad; }
+#header .badge {
+    background: #2ec5ad; color: #0b1e3d; font-size: 11px; font-weight: 700;
+    padding: 2px 8px; border-radius: 3px; margin-left: 10px; vertical-align: middle;
+}
+#header a {
+    color: #8ecae6; text-decoration: none; font-size: 14px;
+    padding: 6px 16px; border: 1px solid #8ecae6; border-radius: 4px;
+    transition: all .2s;
+}
+#header a:hover { background: #8ecae6; color: #0b1e3d; }
+
+/* ── Side Panel (通用左侧面板基础样式) ── */
+.side-panel {
+    position: absolute; top: 66px; left: 16px; z-index: 10;
+    background: rgba(11, 30, 61, .94); color: #fff;
+    padding: 16px 20px; border-radius: 8px; border: 1px solid #2ec5ad;
+    font-size: 13px; max-height: calc(100vh - 90px); overflow-y: auto;
+}
+.side-panel h3 { color: #2ec5ad; font-size: 14px; margin: 14px 0 8px; }
+.side-panel h3:first-child { margin-top: 0; }
+
+/* Layer item (checkbox/radio 列表项) */
+.layer-item {
+    display: flex; align-items: center; gap: 8px; padding: 5px 8px;
+    border-radius: 4px; transition: background .15s;
+}
+.layer-item:hover { background: rgba(46,197,173,.08); }
+.layer-item label {
+    display: flex; align-items: center; gap: 8px; cursor: pointer; flex: 1; min-width: 0;
+}
+.side-panel input[type="radio"],
+.side-panel input[type="checkbox"] {
+    accent-color: #2ec5ad; width: 15px; height: 15px; flex-shrink: 0;
+}
+.layer-desc { font-size: 11px; color: #8ba3bf; margin-left: 23px; margin-top: -2px; }
+
+/* Locate button */
+.btn-locate {
+    flex-shrink: 0; width: 26px; height: 26px; border: none; border-radius: 4px;
+    background: rgba(46,197,173,.15); color: #2ec5ad; cursor: pointer;
+    font-size: 14px; line-height: 26px; text-align: center;
+    transition: background .2s;
+}
+.btn-locate:hover { background: rgba(46,197,173,.35); }
+.btn-locate:disabled { opacity: .3; cursor: default; }
+
+/* ── Status Bar ── */
+#status {
+    position: absolute; bottom: 36px; left: 16px; z-index: 10;
+    background: rgba(11, 30, 61, .85); color: #8ecae6;
+    padding: 8px 14px; border-radius: 4px; font-size: 12px;
+    max-width: 50vw; word-break: break-all;
+}
+
+/* ── Coord Bar (底部相机坐标) ── */
+#coordBar {
+    position: absolute; bottom: 0; left: 0; right: 0; z-index: 10;
+    background: rgba(10, 22, 40, .92);
+    border-top: 1px solid rgba(46,197,173,.3);
+    padding: 6px 24px;
+    display: flex; gap: 24px; align-items: center;
+    font-family: 'Consolas', monospace; font-size: 12px; color: #8ba3bf;
+}
+#coordBar .coord-group { display: flex; align-items: center; gap: 6px; }
+#coordBar .coord-label { color: #2ec5ad; font-weight: 600; font-size: 11px; margin-right: 6px; }
+#coordBar .coord-value { color: #e8edf3; }
+
+/* ── Utilities ── */
+.warning {
+    margin-top: 14px; padding: 8px 12px;
+    background: rgba(255, 193, 7, .12); border-left: 3px solid #ffc107;
+    border-radius: 4px; font-size: 12px; color: #ffc107; line-height: 1.5;
+}
+.divider { border: none; border-top: 1px solid #526f82; margin: 10px 0; }
+
+/* ── Debug Panel (调试模式 ?debug) ── */
+#debugToggle {
+    display: none;
+    position: absolute; bottom: 46px; right: 16px; z-index: 20;
+    width: 42px; height: 42px; border-radius: 50%;
+    background: rgba(46, 197, 173, .9); color: #0b1e3d;
+    border: none; font-size: 20px; cursor: pointer;
+    box-shadow: 0 4px 16px rgba(0,0,0,.3);
+    transition: transform .2s, background .2s;
+}
+#debugToggle:hover { transform: scale(1.1); background: #2ec5ad; }
+
+#debugPopup {
+    display: none; position: absolute; bottom: 96px; right: 16px; z-index: 20;
+    background: rgba(11, 30, 61, .96); color: #fff;
+    padding: 16px 20px; border-radius: 8px; border: 1px solid #2ec5ad;
+    width: 240px; font-size: 13px;
+    box-shadow: 0 8px 32px rgba(0,0,0,.5);
+}
+#debugPopup h4 { color: #2ec5ad; font-size: 14px; margin-bottom: 10px; }
+#debugPopup button {
+    display: block; width: 100%; padding: 7px 12px; margin: 5px 0;
+    background: rgba(46,197,173,.15); color: #e8edf3; border: 1px solid rgba(46,197,173,.3);
+    border-radius: 4px; cursor: pointer; font-size: 12px; text-align: left;
+    transition: background .15s;
+}
+#debugPopup button:hover { background: rgba(46,197,173,.3); }
+#debugPopup hr { border: none; border-top: 1px solid #526f82; margin: 8px 0; }
+
+#fpsDisplay {
+    position: absolute; top: 66px; right: 16px; z-index: 10;
+    background: rgba(11, 30, 61, .9); color: #2ec5ad;
+    padding: 8px 14px; border-radius: 4px; font-size: 14px;
+    font-family: 'Consolas', monospace; border: 1px solid #2ec5ad;
+    display: none;
+}

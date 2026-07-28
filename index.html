@@ -178,7 +178,7 @@
 <section id="hero">
     <div class="section-tag">技术分享</div>
     <h1>Cesium <span>三维可视化</span> 快速上手</h1>
-    <p class="subtitle">讲用法不讲源码，讲场景不讲原理 —— 五个核心模块带你从零搭建三维地球应用</p>
+    <p class="subtitle">五个模块，一条主线：<strong>加载数据 → 画点标注 → 点击查询 → 坐标换算 → 排查问题</strong><br>学完能独立搭出一个可交互的三维地球应用</p>
     <div class="meta"><strong>主讲人：</strong>___&emsp;&emsp;<strong>日期：</strong>2026 年 7 月 28 日</div>
     <a class="demo-link" href="#mod1">开始 →</a>
 </section>
@@ -186,9 +186,10 @@
 <!-- ════════════════════ 模块一 ════════════════════ -->
 <section id="mod1">
     <div class="section-tag">Module 01</div>
-    <h2>数据类型<span>全景图</span></h2>
+    <h2>从零搭建<span>三维地球</span></h2>
+    <p style="font-size:15px;color:var(--text-dim);margin-bottom:24px;">Cesium 能加载哪些数据？答案是：几乎所有空间数据。这个模块帮你建立<strong>"看到一个数据格式就知道用哪个 API"</strong>的直觉。</p>
 
-    <h3>理解地形与影像</h3>
+    <h3>先搞清两个基底：地形与影像</h3>
     <div class="card-grid">
         <div class="card">
             <h4>地形（Terrain）= 椭球体的几何形状</h4>
@@ -268,7 +269,8 @@
 <!-- ════════════════════ 模块二 ════════════════════ -->
 <section id="mod2">
     <div class="section-tag">Module 02</div>
-    <h2>Entity <span>API</span></h2>
+    <h2>在地球上<span>画东西</span></h2>
+    <p style="font-size:15px;color:var(--text-dim);margin-bottom:24px;">数据加载完只是底座，业务价值在于你"画上去"的那些标注、区域、轨迹。Entity API 就是 Cesium 的<strong>高级画笔</strong>。</p>
 
     <h3>增删改查流程</h3>
     <div class="flow">
@@ -346,7 +348,8 @@
 <!-- ════════════════════ 模块三 ════════════════════ -->
 <section id="mod3">
     <div class="section-tag">Module 03</div>
-    <h2>属性<span>查询</span></h2>
+    <h2>点击<span>查属性</span></h2>
+    <p style="font-size:15px;color:var(--text-dim);margin-bottom:24px;">用户在三维场景上点了一下——你怎么知道他点的是什么？怎么弹出业务信息？<code>scene.pick()</code> 是起点，但你还需要处理 Entity / 3D Tiles / 空白区域三个分支。</p>
 
     <h3>点击拾取流程</h3>
     <div class="flow">
@@ -404,7 +407,8 @@
 <!-- ════════════════════ 模块四 ════════════════════ -->
 <section id="mod4">
     <div class="section-tag">Module 04</div>
-    <h2>坐标系统与<span>空间计算</span></h2>
+    <h2>坐标<span>不要搞反</span></h2>
+    <p style="font-size:15px;color:var(--text-dim);margin-bottom:24px;">三维开发中 80% 的"数据跑偏了"都是坐标系问题。这个模块讲清楚 Cesium 内部用什么坐标、GIS 行业有哪些标准、怎么在它们之间转换。</p>
 
     <h3>Cesium 中的三种坐标系</h3>
     <table>
@@ -533,7 +537,8 @@
 <!-- ════════════════════ 模块五 ════════════════════ -->
 <section id="mod5">
     <div class="section-tag">Module 05</div>
-    <h2>调试与<span>体检</span></h2>
+    <h2>出了问题<span>怎么查</span></h2>
+    <p style="font-size:15px;color:var(--text-dim);margin-bottom:24px;">白屏、黑屏、模型飘在天上、瓦片死活加载不出来——这些"经典翻车"你迟早会遇到。掌握调试工具，10 分钟定位问题比 2 小时瞎猜强。</p>
 
     <h3>核心调试工具</h3>
     <div class="card-grid">
@@ -566,26 +571,34 @@
         </tbody>
     </table>
 
-    <a class="demo-btn" href="demo-04-debug.html" target="_blank">打开示例 → demo-04-debug.html</a>
+    <a class="demo-btn" href="demo-01-loading.html?debug" target="_blank">打开示例 → demo-01-loading.html?debug</a>
 </section>
 
 <!-- ════════════════════ 总结 ════════════════════ -->
 <section id="summary">
     <div class="section-tag">Summary</div>
-    <h2>三个核心<span>落脚点</span></h2>
+    <h2>五句话<span>带走</span></h2>
 
     <div class="card-grid">
         <div class="card" style="border-color:var(--accent);border-width:2px;">
-            <h4 style="font-size:20px;">数据从哪来？</h4>
-            <p style="font-size:15px;">5 种数据类型 → 选对 Provider → 叠加即用<br>倾斜摄影走 3D Tiles，矢量走 GeoJSON/KML</p>
+            <h4 style="font-size:18px;">1. 数据决定 API</h4>
+            <p style="font-size:14px;">看到 <strong>WMS/WMTS</strong> → ImageryProvider<br>看到 <strong>GeoJSON/KML</strong> → DataSource.load()<br>看到 <strong>3D Tiles</strong> → Cesium3DTileset<br>看到 <strong>glTF</strong> → Entity.model 或 Model.fromGltfAsync<br>看到 <strong>S3M</strong> → 只能用超图版 addS3MTilesLayerByScp</p>
         </div>
         <div class="card" style="border-color:var(--accent);border-width:2px;">
-            <h4 style="font-size:20px;">画点去哪找？</h4>
-            <p style="font-size:15px;">≤100 用 Entity，>100 用 Primitive<br>拾取用 <code>scene.pick</code>，属性挂 <code>properties</code></p>
+            <h4 style="font-size:18px;">2. Entity 是画笔，Primitive 是性能</h4>
+            <p style="font-size:14px;">标注 ≤100 个 → <code>entities.add()</code> 够用<br>标注 >100 个 → 切 <code>PointPrimitiveCollection</code><br>业务属性挂 <code>properties</code>，拾取时直接读</p>
         </div>
         <div class="card" style="border-color:var(--accent);border-width:2px;">
-            <h4 style="font-size:20px;">坐标怎么转？</h4>
-            <p style="font-size:15px;">经纬度 ⇄ Cartesian3 ⇄ 屏幕坐标<br><code>fromDegrees</code> 参数是 (经度, 纬度)，别搞反了</p>
+            <h4 style="font-size:18px;">3. 拾取三分支</h4>
+            <p style="font-size:14px;"><code>picked.id instanceof Entity</code> → 标注点<br><code>picked instanceof Cesium3DTileFeature</code> → 建筑/BIM<br>都不是 → <code>pickPosition()</code> 取地理坐标</p>
+        </div>
+        <div class="card" style="border-color:var(--accent);border-width:2px;">
+            <h4 style="font-size:18px;">4. 经纬度一定是 (经度, 纬度)</h4>
+            <p style="font-size:14px;"><code>fromDegrees(<strong>lng</strong>, <strong>lat</strong>, alt)</code> — 不是 (lat, lng)<br>WGS84 ⇄ Cartesian3 ⇄ 屏幕坐标<br>全链路都走这三步</p>
+        </div>
+        <div class="card" style="border-color:var(--accent);border-width:2px;">
+            <h4 style="font-size:18px;">5. 出问题先查这三处</h4>
+            <p style="font-size:14px;">① <code>Inspector</code> → 看瓦片/地形加载状态<br>② <code>Network 面板</code> → 过滤 b3dm / terrain<br>③ <code>Console</code> → <code>viewer.camera</code> 确认位置</p>
         </div>
     </div>
 
@@ -597,7 +610,7 @@
             <tr><td><a href="demo-02-entity.html" target="_blank" style="color:var(--accent);">demo-02-entity.html</a></td><td>Entity API</td><td>实体增删改查 + 属性绑定</td></tr>
             <tr><td><a href="demo-03-pick.html" target="_blank" style="color:var(--accent);">demo-03-pick.html</a></td><td>属性查询</td><td>Entity / 3D Tiles 拾取分支</td></tr>
             <tr><td><a href="demo-05-coordinates.html" target="_blank" style="color:var(--accent);">demo-05-coordinates.html</a></td><td>坐标系统</td><td>WGS84 ⇄ Cartesian3 互转 + 实时坐标跟踪</td></tr>
-            <tr><td><a href="demo-04-debug.html" target="_blank" style="color:var(--accent);">demo-04-debug.html</a></td><td>调试体检</td><td>Inspector + 控制台调试（复用示例一场景数据）</td></tr>
+            <tr><td><a href="demo-01-loading.html?debug" target="_blank" style="color:var(--accent);">demo-01-loading.html?debug</a></td><td>调试体检</td><td>在示例一场景上启用 Inspector / FPS / Console 调试</td></tr>
         </tbody>
     </table>
 </section>
@@ -606,13 +619,14 @@
 <section id="qa">
     <div class="section-tag">Q &amp; A</div>
     <h2>答疑<span>环节</span></h2>
-    <p class="qa-line">如果你问我"这个能不能实现"——</p>
-    <p class="qa-big">能，但要看数据量。</p>
-    <p class="qa-line" style="margin-top:32px;">如果你问我"东西放歪了"——</p>
-    <p class="qa-big">经度纬度是不是搞反了？</p>
+    <p class="qa-line">"这个效果能不能做？"</p>
+    <p class="qa-big">能，关键看数据量和格式。</p>
+    <p class="qa-line" style="margin-top:32px;">"数据加载出来但位置不对？"</p>
+    <p class="qa-big">先查坐标系，再查参数顺序。</p>
+    <p class="qa-line" style="margin-top:32px;">"帧率只有个位数？"</p>
+    <p class="qa-big">Entity 换 Primitive，SSE 调大。</p>
     <p class="qa-line" style="margin-top:48px;font-size:16px;color:var(--text-dim);">
-        现在是提问时间，欢迎随时打断。<br>
-        没有蠢问题，只有没问出来的问题。
+        现在开始提问，技术细节 / 项目实践都可以聊。
     </p>
 </section>
 

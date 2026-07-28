@@ -7,25 +7,8 @@
     <link href="../Build/Cesium/Widgets/widgets.css" rel="stylesheet">
     <script src="../Build/Cesium/Cesium.js"></script>
     <script src="shared-config.js"></script>
+    <link href="shared-style.css" rel="stylesheet">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        html, body { width: 100%; height: 100%; overflow: hidden; font-family: 'Segoe UI', system-ui, sans-serif; }
-        #cesiumContainer { width: 100%; height: 100%; }
-        #header {
-            position: absolute; top: 0; left: 0; right: 0; z-index: 10;
-            background: linear-gradient(135deg, #0b1e3d 0%, #163a5f 100%);
-            padding: 14px 24px;
-            display: flex; align-items: center; justify-content: space-between;
-            border-bottom: 2px solid #2ec5ad;
-        }
-        #header h1 { color: #fff; font-size: 20px; font-weight: 600; }
-        #header h1 span { color: #2ec5ad; }
-        #header a {
-            color: #8ecae6; text-decoration: none; font-size: 14px;
-            padding: 6px 16px; border: 1px solid #8ecae6; border-radius: 4px;
-            transition: all .2s;
-        }
-        #header a:hover { background: #8ecae6; color: #0b1e3d; }
         #panel {
             position: absolute; top: 70px; left: 16px; z-index: 10;
             background: rgba(11, 30, 61, .92); color: #fff;
@@ -41,11 +24,6 @@
         #panel button:hover { background: #26a08d; }
         #panel button.danger { background: #e74c3c; }
         #panel button.danger:hover { background: #c0392b; }
-        .warning {
-            margin-top: 12px; padding: 8px 12px;
-            background: rgba(231, 76, 60, .15); border-left: 3px solid #e74c3c;
-            border-radius: 4px; font-size: 12px; color: #e74c3c; line-height: 1.5;
-        }
         #queryPanel {
             position: absolute; top: 70px; right: 16px; z-index: 10;
             background: rgba(11, 30, 61, .92); color: #fff;
@@ -63,21 +41,6 @@
             font-family: 'Consolas', monospace; font-size: 12px;
             min-height: 60px; white-space: pre-wrap; color: #8ecae6;
         }
-        #status {
-            position: absolute; bottom: 36px; left: 16px; z-index: 10;
-            background: rgba(11, 30, 61, .85); color: #8ecae6;
-            padding: 8px 14px; border-radius: 4px; font-size: 12px;
-        }
-        #coordBar {
-            position: absolute; bottom: 0; left: 0; right: 0; z-index: 10;
-            background: rgba(10, 22, 40, .92);
-            border-top: 1px solid rgba(46,197,173,.3);
-            padding: 6px 24px;
-            display: flex; gap: 24px; align-items: center;
-            font-family: 'Consolas', monospace; font-size: 12px; color: #8ba3bf;
-        }
-        #coordBar .coord-label { color: #2ec5ad; font-weight: 600; font-size: 11px; margin-right: 6px; }
-        #coordBar .coord-value { color: #e8edf3; }
     </style>
 </head>
 <body>

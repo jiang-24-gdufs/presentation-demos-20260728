@@ -10,83 +10,15 @@
         <link href="../Build/Cesium/Widgets/widgets.css" rel="stylesheet">
         <script src="../Build/Cesium/Cesium.js"></script>
         注意：超图版本不支持 fromIonAssetId / fromAssetId 等静态工厂方法，需改用旧版构造函数 API。
+
+        调试模式：URL 添加 ?debug 参数即可启用调试工具面板（Inspector / FPS / 线框 / Console 打印）。
     -->
     <link href="https://cesium.com/downloads/cesiumjs/releases/1.143/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
     <script src="https://cesium.com/downloads/cesiumjs/releases/1.143/Build/Cesium/Cesium.js"></script>
     <script src="shared-config.js"></script>
+    <link href="shared-style.css" rel="stylesheet">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        html, body { width: 100%; height: 100%; overflow: hidden; font-family: 'Segoe UI', system-ui, sans-serif; }
-        #cesiumContainer { width: 100%; height: 100%; }
-        #header {
-            position: absolute; top: 0; left: 0; right: 0; z-index: 10;
-            background: linear-gradient(135deg, #0b1e3d 0%, #163a5f 100%);
-            padding: 14px 24px;
-            display: flex; align-items: center; justify-content: space-between;
-            border-bottom: 2px solid #2ec5ad;
-        }
-        #header h1 { color: #fff; font-size: 20px; font-weight: 600; }
-        #header h1 span { color: #2ec5ad; }
-        #header .badge {
-            background: #2ec5ad; color: #0b1e3d; font-size: 11px; font-weight: 700;
-            padding: 2px 8px; border-radius: 3px; margin-left: 10px; vertical-align: middle;
-        }
-        #header a {
-            color: #8ecae6; text-decoration: none; font-size: 14px;
-            padding: 6px 16px; border: 1px solid #8ecae6; border-radius: 4px;
-            transition: all .2s;
-        }
-        #header a:hover { background: #8ecae6; color: #0b1e3d; }
-        #panel {
-            position: absolute; top: 66px; left: 16px; z-index: 10;
-            background: rgba(11, 30, 61, .94); color: #fff;
-            padding: 16px 20px; border-radius: 8px; border: 1px solid #2ec5ad;
-            width: 320px; font-size: 13px; max-height: calc(100vh - 90px); overflow-y: auto;
-        }
-        #panel h3 { color: #2ec5ad; font-size: 14px; margin: 14px 0 8px; }
-        #panel h3:first-child { margin-top: 0; }
-        #panel .layer-item {
-            display: flex; align-items: center; gap: 8px; padding: 5px 8px;
-            border-radius: 4px; transition: background .15s;
-        }
-        #panel .layer-item:hover { background: rgba(46,197,173,.08); }
-        #panel .layer-item label {
-            display: flex; align-items: center; gap: 8px; cursor: pointer; flex: 1; min-width: 0;
-        }
-        #panel input[type="radio"], #panel input[type="checkbox"] {
-            accent-color: #2ec5ad; width: 15px; height: 15px; flex-shrink: 0;
-        }
-        #panel .desc { font-size: 11px; color: #8ba3bf; margin-left: 23px; margin-top: -2px; }
-        .btn-locate {
-            flex-shrink: 0; width: 26px; height: 26px; border: none; border-radius: 4px;
-            background: rgba(46,197,173,.15); color: #2ec5ad; cursor: pointer;
-            font-size: 14px; line-height: 26px; text-align: center;
-            transition: background .2s;
-        }
-        .btn-locate:hover { background: rgba(46,197,173,.35); }
-        .btn-locate:disabled { opacity: .3; cursor: default; }
-        .warning {
-            margin-top: 14px; padding: 8px 12px;
-            background: rgba(255, 193, 7, .12); border-left: 3px solid #ffc107;
-            border-radius: 4px; font-size: 12px; color: #ffc107; line-height: 1.5;
-        }
-        .divider { border: none; border-top: 1px solid #526f82; margin: 10px 0; }
-        #status {
-            position: absolute; bottom: 36px; left: 16px; z-index: 10;
-            background: rgba(11, 30, 61, .85); color: #8ecae6;
-            padding: 8px 14px; border-radius: 4px; font-size: 12px;
-            max-width: 50vw; word-break: break-all;
-        }
-        #coordBar {
-            position: absolute; bottom: 0; left: 0; right: 0; z-index: 10;
-            background: rgba(10, 22, 40, .92);
-            border-top: 1px solid rgba(46,197,173,.3);
-            padding: 6px 24px;
-            display: flex; gap: 24px; align-items: center;
-            font-family: 'Consolas', monospace; font-size: 12px; color: #8ba3bf;
-        }
-        #coordBar .coord-label { color: #2ec5ad; font-weight: 600; font-size: 11px; margin-right: 6px; }
-        #coordBar .coord-value { color: #e8edf3; }
+        .side-panel { width: 320px; }
     </style>
 </head>
 <body>
@@ -96,71 +28,85 @@
     </div>
     <div id="cesiumContainer"></div>
 
-    <div id="panel">
-        <h3>🌍 底图影像（单选）</h3>
+    <div id="panel" class="side-panel">
+        <h3>底图影像（单选）</h3>
         <div class="layer-item"><label><input type="radio" name="imagery" value="2" checked> Bing Maps Aerial</label></div>
         <div class="layer-item"><label><input type="radio" name="imagery" value="3"> Bing Aerial + Labels</label></div>
         <div class="layer-item"><label><input type="radio" name="imagery" value="3830182"> Google Satellite</label></div>
 
-        <h3>⛰ 地形</h3>
+        <h3>地形</h3>
         <div class="layer-item">
             <label><input type="checkbox" id="chkTerrain" checked> Cesium World Terrain</label>
         </div>
-        <div class="desc">Ion Asset 1 · Quantized-Mesh</div>
+        <div class="layer-desc">Ion Asset 1 · Quantized-Mesh</div>
 
-        <h3>🏗 3D Tiles</h3>
+        <h3>3D Tiles</h3>
 
         <div class="layer-item">
             <label><input type="checkbox" id="chkOSM"> OSM Buildings</label>
             <button class="btn-locate" id="locOSM" disabled title="飞行定位">📍</button>
         </div>
-        <div class="desc">Ion 96188 · 全球建筑白模</div>
+        <div class="layer-desc">Ion 96188 · 全球建筑白模</div>
 
         <div class="layer-item">
             <label><input type="checkbox" id="chkGoogle3D"> Google Photorealistic</label>
             <button class="btn-locate" id="locGoogle3D" disabled title="飞行定位">📍</button>
         </div>
-        <div class="desc">Ion 2275207 · 全球真实感三维</div>
+        <div class="layer-desc">Ion 2275207 · 全球真实感三维</div>
 
         <div class="layer-item">
             <label><input type="checkbox" id="chkSF"> 旧金山倾斜摄影</label>
             <button class="btn-locate" id="locSF" disabled title="飞行定位">📍</button>
         </div>
-        <div class="desc">Ion 1415196 · Aerometrex 高精度三维</div>
+        <div class="layer-desc">Ion 1415196 · Aerometrex 高精度三维</div>
 
         <div class="layer-item">
             <label><input type="checkbox" id="chkDenver"> 丹佛倾斜摄影</label>
             <button class="btn-locate" id="locDenver" disabled title="飞行定位">📍</button>
         </div>
-        <div class="desc">Ion 354307 · Aerometrex 高精度三维</div>
+        <div class="layer-desc">Ion 354307 · Aerometrex 高精度三维</div>
 
         <div class="layer-item">
             <label><input type="checkbox" id="chkMelbourne"> 墨尔本点云</label>
             <button class="btn-locate" id="locMelbourne" disabled title="飞行定位">📍</button>
         </div>
-        <div class="desc">Ion 43978 · 大规模城市点云</div>
+        <div class="layer-desc">Ion 43978 · 大规模城市点云</div>
 
         <div class="layer-item">
             <label><input type="checkbox" id="chkMontreal"> 蒙特利尔点云</label>
             <button class="btn-locate" id="locMontreal" disabled title="飞行定位">📍</button>
         </div>
-        <div class="desc">Ion 28945 · 城市点云数据</div>
+        <div class="layer-desc">Ion 28945 · 城市点云数据</div>
 
         <hr class="divider">
-        <h3>📦 glTF 模型</h3>
+        <h3>glTF 模型</h3>
 
         <div class="layer-item">
             <label><input type="checkbox" id="chkGltf"> CesiumMilkTruck</label>
             <button class="btn-locate" id="locGltf" disabled title="飞行定位">📍</button>
         </div>
-        <div class="desc">Entity API · Khronos 公开样本</div>
+        <div class="layer-desc">Entity API · Khronos 公开样本</div>
 
         <div class="layer-item">
             <label><input type="checkbox" id="chkGltf2"> Duck</label>
             <button class="btn-locate" id="locGltf2" disabled title="飞行定位">📍</button>
         </div>
-        <div class="desc">Primitive API · Model.fromGltfAsync</div>
+        <div class="layer-desc">Primitive API · Model.fromGltfAsync</div>
     </div>
+
+    <!-- 调试面板（?debug 时显示） -->
+    <button id="debugToggle" onclick="toggleDebugPopup()" title="调试工具">🔧</button>
+    <div id="debugPopup">
+        <h4>调试工具</h4>
+        <button onclick="toggleInspector()">Cesium Inspector</button>
+        <button onclick="toggleFPS()">帧率 (FPS) 显示</button>
+        <button onclick="toggleWireframe()">线框模式</button>
+        <hr>
+        <button onclick="printEntityList()">→ Console: 实体列表</button>
+        <button onclick="printSceneInfo()">→ Console: 场景信息</button>
+        <button onclick="printTilesetStats()">→ Console: Tileset 统计</button>
+    </div>
+    <div id="fpsDisplay">FPS: --</div>
 
     <div id="status">就绪</div>
     <div id="coordBar">
@@ -170,8 +116,21 @@
     </div>
 
     <script>
+        var DEBUG_MODE = new URLSearchParams(location.search).has('debug');
         var statusEl = document.getElementById('status');
         function setStatus(msg) { statusEl.textContent = msg; }
+
+        if (DEBUG_MODE) {
+            document.getElementById('debugToggle').style.display = 'block';
+            document.title = '模块五：调试与体检';
+            document.querySelector('#header h1').innerHTML = '模块五：<span>调试与体检</span><span class="badge">CDN Cesium</span>';
+            setStatus('调试模式 — 点击右下角 🔧 打开调试工具');
+        }
+
+        var debugPopupEl = document.getElementById('debugPopup');
+        window.toggleDebugPopup = function () {
+            debugPopupEl.style.display = debugPopupEl.style.display === 'none' ? 'block' : 'none';
+        };
 
         (async function () {
             var viewer = new Cesium.Viewer('cesiumContainer', {
@@ -186,6 +145,7 @@
                 selectionIndicator: false,
                 infoBox: false
             });
+            window.viewer = viewer;
 
             // ── 初始地形 ──
             try {
@@ -237,7 +197,6 @@
 
             // ═══════════════════════════════════════════════
             //  通用 3D Tiles 加载器
-            //  管理 checkbox / locate 按钮 / tileset 实例的映射
             // ═══════════════════════════════════════════════
             var tilesetRegistry = {};
 
@@ -372,6 +331,102 @@
                     orientation: { heading: 0, pitch: Cesium.Math.toRadians(-45), roll: 0 }
                 });
             });
+
+            // ═══════════════════════════════════════════════
+            //  调试工具（?debug 模式）
+            // ═══════════════════════════════════════════════
+            if (DEBUG_MODE) {
+                var inspectorLoaded = false;
+                window.toggleInspector = function () {
+                    if (!inspectorLoaded) {
+                        viewer.extend(Cesium.viewerCesiumInspectorMixin);
+                        inspectorLoaded = true;
+                        setStatus('Cesium Inspector 已启用');
+                    }
+                    var el = document.querySelector('.cesium-cesiumInspector');
+                    if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
+                };
+
+                var fpsShowing = false;
+                var lastTime = performance.now();
+                var frameCount = 0;
+                var fpsEl = document.getElementById('fpsDisplay');
+
+                function updateFPS() {
+                    if (!fpsShowing) return;
+                    frameCount++;
+                    var now = performance.now();
+                    if (now - lastTime >= 1000) {
+                        fpsEl.textContent = 'FPS: ' + frameCount;
+                        frameCount = 0;
+                        lastTime = now;
+                    }
+                    requestAnimationFrame(updateFPS);
+                }
+
+                window.toggleFPS = function () {
+                    fpsShowing = !fpsShowing;
+                    fpsEl.style.display = fpsShowing ? 'block' : 'none';
+                    if (fpsShowing) {
+                        lastTime = performance.now();
+                        frameCount = 0;
+                        updateFPS();
+                    }
+                    setStatus(fpsShowing ? 'FPS 显示已开启' : 'FPS 显示已关闭');
+                };
+
+                var wireframeOn = false;
+                window.toggleWireframe = function () {
+                    wireframeOn = !wireframeOn;
+                    Object.keys(tilesetRegistry).forEach(function (key) {
+                        var entry = tilesetRegistry[key];
+                        if (entry.tileset) entry.tileset.debugWireframe = wireframeOn;
+                    });
+                    setStatus(wireframeOn ? '线框模式已开启' : '线框模式已关闭');
+                };
+
+                window.printEntityList = function () {
+                    var all = viewer.entities.values;
+                    console.group('Entity 列表（共 ' + all.length + ' 个）');
+                    all.forEach(function (e) {
+                        console.log({ id: e.id, name: e.name, hasPosition: !!e.position, hasPoint: !!e.point, hasLabel: !!e.label });
+                    });
+                    console.groupEnd();
+                    setStatus('已打印 ' + all.length + ' 个实体到控制台（F12）');
+                };
+
+                window.printSceneInfo = function () {
+                    var carto = Cesium.Cartographic.fromCartesian(viewer.camera.position);
+                    console.group('场景信息');
+                    console.log('相机经度:', Cesium.Math.toDegrees(carto.longitude).toFixed(6));
+                    console.log('相机纬度:', Cesium.Math.toDegrees(carto.latitude).toFixed(6));
+                    console.log('相机高度:', carto.height.toFixed(2), 'm');
+                    console.log('Primitive 数:', viewer.scene.primitives.length);
+                    console.log('Entity 数:', viewer.entities.values.length);
+                    console.log('requestRenderMode:', viewer.scene.requestRenderMode);
+                    console.groupEnd();
+                    setStatus('场景信息已打印到控制台（F12）');
+                };
+
+                window.printTilesetStats = function () {
+                    var found = false;
+                    Object.keys(tilesetRegistry).forEach(function (key) {
+                        var t = tilesetRegistry[key].tileset;
+                        if (!t) return;
+                        found = true;
+                        console.group('3D Tiles 统计 [' + tilesetRegistry[key].label + ']');
+                        console.log('maximumScreenSpaceError:', t.maximumScreenSpaceError);
+                        if (t.statistics) console.log('已加载瓦片数:', t.statistics.numberOfLoadedTilesTotal);
+                        if (typeof t.totalMemoryUsageInBytes === 'number') console.log('总内存(MB):', (t.totalMemoryUsageInBytes / 1048576).toFixed(2));
+                        if (t.root) {
+                            console.log('根瓦片 geometricError:', t.root.geometricError);
+                            console.log('子瓦片数:', t.root.children ? t.root.children.length : 0);
+                        }
+                        console.groupEnd();
+                    });
+                    setStatus(found ? 'Tileset 统计已打印到控制台（F12）' : '请先加载 3D Tiles 数据');
+                };
+            }
 
             // ═══════════════════════════════════════════════
             //  实时相机坐标

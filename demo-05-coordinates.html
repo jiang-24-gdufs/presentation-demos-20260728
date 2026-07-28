@@ -11,23 +11,9 @@
     <link href="https://cesium.com/downloads/cesiumjs/releases/1.143/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
     <script src="https://cesium.com/downloads/cesiumjs/releases/1.143/Build/Cesium/Cesium.js"></script>
     <script src="shared-config.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.12.1/proj4.min.js"></script>
+    <link href="shared-style.css" rel="stylesheet">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        html, body { width: 100%; height: 100%; overflow: hidden; font-family: 'Segoe UI', system-ui, sans-serif; }
-        #cesiumContainer { width: 100%; height: 100%; }
-        #header {
-            position: absolute; top: 0; left: 0; right: 0; z-index: 10;
-            background: linear-gradient(135deg, #0b1e3d 0%, #163a5f 100%);
-            padding: 14px 24px;
-            display: flex; align-items: center; justify-content: space-between;
-            border-bottom: 2px solid #2ec5ad;
-        }
-        #header h1 { color: #fff; font-size: 20px; font-weight: 600; }
-        #header h1 span { color: #2ec5ad; }
-        #header .badge { background: #2ec5ad; color: #0b1e3d; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 3px; margin-left: 10px; }
-        #header a { color: #8ecae6; text-decoration: none; font-size: 14px; padding: 6px 16px; border: 1px solid #8ecae6; border-radius: 4px; transition: all .2s; }
-        #header a:hover { background: #8ecae6; color: #0b1e3d; }
-
         /* 左侧：坐标转换面板 */
         #convertPanel {
             position: absolute; top: 66px; left: 16px; z-index: 10;
@@ -56,34 +42,9 @@
             background: transparent; border: 1px solid #2ec5ad; color: #2ec5ad;
         }
         .btn-outline:hover { background: rgba(46,197,173,.15); }
-        .divider { border: none; border-top: 1px solid #526f82; margin: 12px 0; }
-
-        /* 右侧：坐标说明 */
-        #infoPanel {
-            position: absolute; top: 66px; right: 16px; z-index: 10;
-            background: rgba(11, 30, 61, .94); color: #fff;
-            padding: 16px 20px; border-radius: 8px; border: 1px solid #2ec5ad;
-            width: 340px; font-size: 13px;
-            max-height: calc(100vh - 110px); overflow-y: auto;
-        }
-        #infoPanel h3 { color: #2ec5ad; font-size: 14px; margin-bottom: 10px; }
-        #infoPanel table { width: 100%; border-collapse: collapse; }
-        #infoPanel th { text-align: left; padding: 6px 8px; background: rgba(46,197,173,.15); color: #2ec5ad; font-size: 12px; }
-        #infoPanel td { padding: 5px 8px; border-bottom: 1px solid rgba(255,255,255,.06); font-size: 12px; }
-        #infoPanel code { background: rgba(46,197,173,.12); padding: 1px 5px; border-radius: 3px; font-size: 11px; color: #2ec5ad; }
-
-        /* 底部：实时坐标条 */
-        #coordBar {
-            position: absolute; bottom: 0; left: 0; right: 0; z-index: 10;
-            background: rgba(10, 22, 40, .92);
-            border-top: 1px solid rgba(46,197,173,.3);
-            padding: 8px 24px;
-            display: flex; gap: 32px; align-items: center;
-            font-family: 'Consolas', monospace; font-size: 12px; color: #8ba3bf;
-        }
-        #coordBar .coord-group { display: flex; align-items: center; gap: 6px; }
-        #coordBar .coord-label { color: #2ec5ad; font-weight: 600; font-size: 11px; }
-        #coordBar .coord-value { color: #e8edf3; min-width: 80px; }
+        .proj4-result { margin-top: 6px; padding: 8px; background: rgba(46,197,173,.08); border-radius: 4px; font-family: 'Consolas', monospace; font-size: 12px; color: #2ec5ad; min-height: 20px; }
+        #coordBar { padding: 8px 24px; gap: 32px; }
+        #coordBar .coord-value { min-width: 80px; }
     </style>
 </head>
 <body>
@@ -115,6 +76,30 @@
         <div class="field-row"><label>经度 (°)</label><input type="text" id="outLng" readonly></div>
         <div class="field-row"><label>纬度 (°)</label><input type="text" id="outLat" readonly></div>
         <div class="field-row"><label>高度 (m)</label><input type="text" id="outAlt" readonly></div>
+
+        <hr class="divider">
+
+        <h3>EPSG 坐标系转换 (proj4)</h3>
+        <div class="field-row">
+            <label>源坐标系</label>
+            <select id="srcEpsg" style="flex:1;padding:6px 8px;background:rgba(255,255,255,.08);border:1px solid #526f82;color:#fff;border-radius:4px;font-size:12px;">
+                <option value="EPSG:4326">EPSG:4326 (WGS84)</option>
+                <option value="EPSG:3857">EPSG:3857 (Web Mercator)</option>
+                <option value="EPSG:4490">EPSG:4490 (CGCS2000)</option>
+            </select>
+        </div>
+        <div class="field-row"><label>X / 经度</label><input type="number" id="p4X" value="116.3975" step="0.0001"></div>
+        <div class="field-row"><label>Y / 纬度</label><input type="number" id="p4Y" value="39.9087" step="0.0001"></div>
+        <div class="field-row">
+            <label>目标坐标系</label>
+            <select id="dstEpsg" style="flex:1;padding:6px 8px;background:rgba(255,255,255,.08);border:1px solid #526f82;color:#fff;border-radius:4px;font-size:12px;">
+                <option value="EPSG:3857">EPSG:3857 (Web Mercator)</option>
+                <option value="EPSG:4326">EPSG:4326 (WGS84)</option>
+                <option value="EPSG:4490">EPSG:4490 (CGCS2000)</option>
+            </select>
+        </div>
+        <button class="btn" onclick="proj4Convert()">proj4 转换 →</button>
+        <div class="proj4-result" id="p4Result">等待转换…</div>
 
         <hr class="divider">
 
@@ -285,6 +270,28 @@
 
             // 初始转换
             wgs84ToCartesian();
+
+            // ── proj4 坐标系转换 ──
+            proj4.defs('EPSG:4490', '+proj=longlat +ellps=GRS80 +no_defs');
+
+            window.proj4Convert = function () {
+                var srcCode = document.getElementById('srcEpsg').value;
+                var dstCode = document.getElementById('dstEpsg').value;
+                var x = parseFloat(document.getElementById('p4X').value);
+                var y = parseFloat(document.getElementById('p4Y').value);
+                var resultEl = document.getElementById('p4Result');
+                if (isNaN(x) || isNaN(y)) { resultEl.textContent = '请输入有效数值'; return; }
+                if (srcCode === dstCode) { resultEl.textContent = '源和目标坐标系相同'; return; }
+
+                try {
+                    var result = proj4(srcCode, dstCode, [x, y]);
+                    var isGeo = dstCode === 'EPSG:4326' || dstCode === 'EPSG:4490';
+                    var precision = isGeo ? 6 : 2;
+                    resultEl.textContent = 'X: ' + result[0].toFixed(precision) + '\nY: ' + result[1].toFixed(precision);
+                } catch (e) {
+                    resultEl.textContent = '转换失败: ' + e.message;
+                }
+            };
         })();
     </script>
 </body>
