@@ -98,7 +98,7 @@
             padding: 14px 18px; border-radius: 6px; margin: 16px 0;
             font-size: 14px; line-height: 1.6; display: flex; gap: 10px; align-items: flex-start;
         }
-        .alert-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+        .alert-icon { flex-shrink: 0; }
         .alert-danger { background: var(--danger-dim); border-left: 4px solid var(--danger); color: #f8b4b4; }
         .alert-warn { background: var(--warn-dim); border-left: 4px solid var(--warn); color: #fde68a; }
         .alert-info { background: rgba(59,130,246,.1); border-left: 4px solid var(--blue); color: #93c5fd; }
@@ -176,33 +176,33 @@
 
 <!-- ════════════════════ HERO ════════════════════ -->
 <section id="hero">
-    <div class="section-tag">技术分享</div>
-    <h1>Cesium <span>三维可视化</span> 快速上手</h1>
-    <p class="subtitle">五个模块，一条主线：<strong>加载数据 → 画点标注 → 点击查询 → 坐标换算 → 排查问题</strong><br>学完能独立搭出一个可交互的三维地球应用</p>
+    <div class="section-tag">内部分享</div>
+    <h1>Cesium <span>三维可视化</span> 开发全流程</h1>
+    <p class="subtitle">完整链路：<strong>加载数据 → 绘制标注 → 点击查询 → 坐标换算 → 排查问题</strong><br>建立从零搭建可交互三维地球应用的完整认知</p>
     <div class="meta"><strong>主讲人：</strong>___&emsp;&emsp;<strong>日期：</strong>2026 年 7 月 28 日</div>
-    <a class="demo-link" href="#mod1">开始 →</a>
 </section>
 
 <!-- ════════════════════ 模块一 ════════════════════ -->
 <section id="mod1">
     <div class="section-tag">Module 01</div>
-    <h2>从零搭建<span>三维地球</span></h2>
-    <p style="font-size:15px;color:var(--text-dim);margin-bottom:24px;">Cesium 能加载哪些数据？答案是：几乎所有空间数据。这个模块帮你建立<strong>"看到一个数据格式就知道用哪个 API"</strong>的直觉。</p>
+    <h2>搭建<span>三维地球</span>底座</h2>
+    <p style="font-size:15px;color:var(--text-dim);">Cesium 能加载哪些数据？答案是：几乎所有主流空间数据格式。</p>
+    <p style="font-size:15px;color:var(--text-dim);margin-bottom:24px;">建立<strong>"看到一种数据格式，就知道该用哪个 API 加载"</strong>的直觉。</p>
 
-    <h3>先搞清两个基底：地形与影像</h3>
+    <h3>先理清两个基础：地形与影像</h3>
     <div class="card-grid">
         <div class="card">
-            <h4>地形（Terrain）= 椭球体的几何形状</h4>
-            <p>地形数据定义地表的<strong>高程起伏</strong>（DEM），让平坦的椭球面变成有山有谷的真实地形。没有地形时，地球是一个光滑的数学椭球面。</p>
-            <p style="color:var(--text-dim);font-size:13px;">类比：一张揉皱的白纸（只有形状，没有颜色）。</p>
+            <h4>地形（Terrain）— 地球的几何骨架</h4>
+            <p>地形数据定义地表的<strong>高程起伏</strong>（DEM），让原本光滑的数学椭球面变得有山有谷。没有地形时，地球是一个标准球体。</p>
+            <p style="color:var(--text-dim);font-size:13px;">作用：提供几何形状（高度信息）。</p>
         </div>
         <div class="card">
-            <h4>影像（Imagery）= 贴在地形上的纹理</h4>
-            <p>影像数据是覆盖在地形表面上的<strong>图片瓦片</strong>（卫星照片、路网图等），让地球表面"有颜色"。影像本身没有高度，只是贴图。</p>
-            <p style="color:var(--text-dim);font-size:13px;">类比：把一张地图贴在揉皱的纸上。</p>
+            <h4>影像（Imagery）— 地表的纹理贴图</h4>
+            <p>影像数据是覆盖在地形表面上的<strong>栅格图片瓦片</strong>（卫星图、路网图等），让地球表面拥有颜色和细节。影像本身不包含高度。</p>
+            <p style="color:var(--text-dim);font-size:13px;">作用：提供外观纹理（视觉信息）。</p>
         </div>
     </div>
-    <p style="font-size:14px;color:var(--text-dim);margin-bottom:24px;">最终效果 = 椭球体基底 + 地形高程起伏（几何）+ 影像纹理贴图（外观）= 你看到的三维地球。</p>
+    <p style="font-size:14px;color:var(--text-dim);margin-bottom:24px;">最终效果 = 椭球体基底 + 地形高程（几何） + 影像纹理（外观），三者叠加形成你看到的三维地球。</p>
 
     <table>
         <thead>
@@ -213,67 +213,67 @@
                 <td><strong>影像</strong></td>
                 <td>WMS / WMTS / TMS / XYZ</td>
                 <td><code>new WebMapServiceImageryProvider({url})</code><br><code>new UrlTemplateImageryProvider({url})</code><br><code>new WebMapTileServiceImageryProvider({url})</code></td>
-                <td>底图、卫星图、行政区划</td>
+                <td>底图、卫星影像、行政区划</td>
             </tr>
             <tr>
                 <td><strong>地形</strong></td>
                 <td>Quantized-Mesh / Heightmap</td>
                 <td><code>CesiumTerrainProvider.fromUrl(url)</code><br><code>new CesiumTerrainProvider({url})</code></td>
-                <td>地形起伏、水面高程</td>
+                <td>地形起伏、水面高程模拟</td>
             </tr>
             <tr>
                 <td><strong>矢量</strong></td>
                 <td>GeoJSON / KML / CZML</td>
                 <td><code>GeoJsonDataSource.load(url)</code><br><code>KmlDataSource.load(url)</code></td>
-                <td>边界、路径、标注</td>
+                <td>边界线、路径、标注点</td>
             </tr>
             <tr>
                 <td><strong>3D Tiles</strong></td>
                 <td>b3dm / i3dm / pnts / glTF</td>
                 <td><code>Cesium3DTileset.fromUrl(url)</code><br><code>new Cesium3DTileset({url})</code></td>
-                <td>倾斜摄影、BIM、点云</td>
+                <td>倾斜摄影、BIM、点云、大规模模型</td>
             </tr>
             <tr>
                 <td><strong>模型</strong></td>
                 <td>glTF / glb</td>
                 <td><code>Model.fromGltfAsync({url})</code><br>Entity: <code>{model: {uri: url}}</code></td>
-                <td>单体建筑、设备、车辆</td>
+                <td>单体建筑、设备、车辆等精细模型</td>
             </tr>
             <tr>
                 <td><strong>S3M</strong></td>
                 <td>S3M / S3MB（超图专有）</td>
                 <td><code>scene.addS3MTilesLayerByScp(url)</code><br><span style="color:var(--text-dim);">仅超图版支持</span></td>
-                <td>超图 iServer 三维服务</td>
+                <td>超图 iServer 发布的三维服务</td>
             </tr>
         </tbody>
     </table>
 
     <div class="alert alert-warn">
         <span class="alert-icon">⚠</span>
-        <div>上表为通用 URL 加载 API。Ion 平台数据可用 <code>fromIonAssetId()</code> 快捷加载，但超图版不支持。倾斜摄影必须走 3D Tiles 流式加载，不可全量读入。</div>
+        <div>上表为基于 URL 的通用加载方式。本次分享均使用 Cesium ion 平台数据 <code>fromIonAssetId()</code> 快捷加载。</div>
     </div>
 
     <div class="alert alert-info">
         <span class="alert-icon">💡</span>
-        <div>超图版额外支持 S3M/S3MB 格式，通过 <code>S3MTilesLayer</code> 加载 iServer 三维服务。</div>
+        <div>超图定制版 Cesium 额外支持 S3M/S3MB 格式，通过 <code>S3MTilesLayer</code> 加载 iServer 三维服务，用法与标准 3D Tiles 类似。</div>
     </div>
 
-    <a class="demo-btn" href="demo-01-loading.html" target="cesium-demo">打开示例 → demo-01-loading.html</a>
+    <a class="demo-btn" href="demo-01-loading.html" target="cesium-demo">打开示例 demo-01-loading.html</a>
 </section>
 
 <!-- ════════════════════ 模块二 ════════════════════ -->
 <section id="mod2">
     <div class="section-tag">Module 02</div>
-    <h2>在地球上<span>画东西</span></h2>
-    <p style="font-size:15px;color:var(--text-dim);margin-bottom:24px;">数据加载完只是底座，业务价值在于你"画上去"的那些标注、区域、轨迹。Entity API 就是 Cesium 的<strong>高级画笔</strong>。</p>
+    <h2>在地球上<span>绘制业务元素</span></h2>
+    <p style="font-size:15px;color:var(--text-dim);margin-bottom:24px;">加载完底图只是第一步，真正的业务价值体现在你"画上去"的那些标注、区域、轨迹上。Entity API 是 Cesium 提供的<strong>高层封装接口</strong>，用来快速创建和管理可视化对象。</p>
 
-    <h3>增删改查流程</h3>
+    <h3>增删改查的标准流程</h3>
     <div class="flow">
         <div class="flow-step"><code>viewer.entities.add()</code></div>
         <span class="flow-arrow">→</span>
         <div class="flow-step"><code>entities.getById(id)</code></div>
         <span class="flow-arrow">→</span>
-        <div class="flow-step">修改 <code>entity.position</code> / 属性</div>
+        <div class="flow-step">修改 <code>entity.position</code> / 样式属性</div>
         <span class="flow-arrow">→</span>
         <div class="flow-step"><code>entities.remove(entity)</code></div>
     </div>
@@ -281,35 +281,35 @@
     <div class="card-grid">
         <div class="card">
             <h4>绑定业务属性</h4>
-            <p>通过 <code>entity.properties</code> 挂载自定义键值对（如 ID、状态、类型），拾取时可直接读取，无需额外数据结构映射。</p>
+            <p>通过 <code>entity.properties</code> 挂载任意自定义键值对（如设备ID、状态、类型），拾取时可直接读取，无需额外维护映射表。</p>
         </div>
         <div class="card">
-            <h4>样式配置</h4>
-            <p>支持 <code>point</code> / <code>billboard</code> / <code>label</code> / <code>polygon</code> 等可视化样式，均支持 <code>heightReference</code> 贴地设置。</p>
+            <h4>丰富的可视化样式</h4>
+            <p>支持 <code>point</code>（点）、<code>billboard</code>（图标）、<code>label</code>（文字标签）、<code>polygon</code>（面）等多种图形，均可设置 <code>heightReference</code> 实现贴地或固定高度。</p>
         </div>
         <div class="card">
-            <h4>飞行定位</h4>
-            <p><code>viewer.zoomTo(entity)</code> 或 <code>viewer.flyTo(entity)</code> 快速定位到目标实体，支持传入 offset 控制视角。</p>
+            <h4>快速定位与飞行</h4>
+            <p><code>viewer.zoomTo(entity)</code> 或 <code>viewer.flyTo(entity)</code> 可一键将相机聚焦到目标实体，支持传入偏移量控制观看角度。</p>
         </div>
     </div>
 
-    <h3>实际业务中的 Entity 用法</h3>
+    <h3>典型业务场景中的 Entity 应用</h3>
     <div class="card-grid">
         <div class="card">
             <h4>IoT 设备监控</h4>
-            <p>用 <code>billboard</code> 展示设备图标，<code>label</code> 显示实时状态（正常/告警/离线），通过 <code>properties</code> 挂载设备 ID + 最后上报时间，点击弹出详情。颜色随状态动态变化。</p>
+            <p>用 <code>billboard</code> 展示设备图标，<code>label</code> 显示实时状态（正常/告警/离线），通过 <code>properties</code> 挂载设备ID和上报时间。点击后弹出详情面板，颜色可随状态动态变化。</p>
         </div>
         <div class="card">
-            <h4>管线/路径标注</h4>
-            <p>用 <code>polyline</code> 绘制管线路径，搭配 <code>label</code> 标注管线名称和材质。可通过 <code>PolylineGlowMaterialProperty</code> 设置发光效果，模拟流向动画。</p>
+            <h4>管线 / 路径可视化</h4>
+            <p>用 <code>polyline</code> 绘制管线或路径，搭配 <code>label</code> 标注名称和材质。可通过 <code>PolylineGlowMaterialProperty</code> 添加发光流动效果，模拟介质流向。</p>
         </div>
         <div class="card">
-            <h4>区域围栏 / 地块划分</h4>
-            <p>用 <code>polygon</code> + 半透明填充绘制地块边界，<code>polyline</code> 高亮边界线。适合城市规划、应急管理中的区域可视化。</p>
+            <h4>区域围栏与地块划分</h4>
+            <p>用 <code>polygon</code> + 半透明填充绘制地块边界，同时用 <code>polyline</code> 描边高亮。适用于城市规划、应急管理中的区域标注。</p>
         </div>
         <div class="card">
             <h4>轨迹回放</h4>
-            <p>结合 <code>SampledPositionProperty</code> 实现时间轴上的位置动画，用于车辆 GPS 轨迹、无人机航迹回放。配合 <code>PathGraphics</code> 显示历史路径。</p>
+            <p>结合 <code>SampledPositionProperty</code> 实现按时间轴驱动的位置动画，适合车辆 GPS 轨迹、无人机航迹回放。配合 <code>PathGraphics</code> 可显示历史路径。</p>
         </div>
     </div>
 
@@ -319,113 +319,112 @@
         <tbody>
             <tr><td><strong>抽象层级</strong></td><td>高层封装，面向业务对象</td><td>底层接口，面向渲染管线</td></tr>
             <tr><td><strong>性能上限</strong></td><td>适合 &lt; 100 个对象</td><td>轻松支撑数千~数万个对象</td></tr>
-            <tr><td><strong>属性绑定</strong></td><td>内置 <code>properties</code>，直接挂业务数据</td><td>无内置属性，需自行维护映射</td></tr>
-            <tr><td><strong>拾取支持</strong></td><td><code>scene.pick</code> 直接返回 Entity</td><td>需额外处理，返回 Primitive 引用</td></tr>
-            <tr><td><strong>动画/时间</strong></td><td>内置 <code>SampledProperty</code>、时间轴联动</td><td>需手动在 <code>preRender</code> 回调中更新</td></tr>
+            <tr><td><strong>属性绑定</strong></td><td>内置 <code>properties</code>，直接挂载业务数据</td><td>无内置属性，需自行维护外部映射</td></tr>
+            <tr><td><strong>拾取支持</strong></td><td><code>scene.pick</code> 直接返回 Entity 引用</td><td>返回 Primitive 引用，需额外处理</td></tr>
+            <tr><td><strong>动画/时间轴</strong></td><td>内置 <code>SampledProperty</code>，与 Cesium 时钟联动</td><td>需在 <code>preRender</code> 回调中手动更新</td></tr>
             <tr><td><strong>典型 API</strong></td><td><code>viewer.entities.add()</code></td><td><code>scene.primitives.add(new PointPrimitiveCollection())</code></td></tr>
-            <tr><td><strong>适用场景</strong></td><td>标注点、InfoBox、轨迹回放、区域绘制</td><td>热力图、大规模标注、粒子效果、自定义 Shader</td></tr>
+            <tr><td><strong>适用场景</strong></td><td>标注点、InfoBox、轨迹回放、区域绘制</td><td>热力图、大规模标注、粒子系统、自定义着色器</td></tr>
         </tbody>
     </table>
 
     <div class="alert alert-warn">
         <span class="alert-icon">⚠</span>
-        <div>Entity 封装了 Primitive，数量少时方便好用，超过 100 个帧率明显下降。大批量标注切 <code>PointPrimitiveCollection</code>。</div>
+        <div>Entity 内部是对 Primitive 的封装，数量少时方便好用，但超过 100 个时帧率明显下降。对于大批量标注，建议直接使用 <code>PointPrimitiveCollection</code> 等 Primitive 方式。</div>
     </div>
 
-    <a class="demo-btn" href="demo-02-entity.html" target="cesium-demo">打开示例 → demo-02-entity.html</a>
+    <a class="demo-btn" href="demo-02-entity.html" target="cesium-demo">打开示例 demo-02-entity.html</a>
 </section>
 
 <!-- ════════════════════ 模块三 ════════════════════ -->
 <section id="mod3">
     <div class="section-tag">Module 03</div>
-    <h2>点击<span>查属性</span></h2>
-    <p style="font-size:15px;color:var(--text-dim);margin-bottom:24px;">用户在三维场景上点了一下——你怎么知道他点的是什么？怎么弹出业务信息？<code>scene.pick()</code> 是起点，但你还需要处理 Entity / 3D Tiles / 空白区域三个分支。</p>
+    <h2>点击<span>查询属性</span></h2>
+    <p style="font-size:15px;color:var(--text-dim);margin-bottom:24px;">用户点击三维场景中的物体，如何知道点中了什么？如何弹出对应的业务信息？<code>scene.pick()</code> 是入口，但你需要根据拾取对象的类型（Entity / 3D Tiles 要素 / 空白区域）走不同的分支。</p>
 
-    <h3>点击拾取流程</h3>
+    <h3>点击拾取标准流程</h3>
     <div class="flow">
         <div class="flow-step">注册鼠标事件<br><code>ScreenSpaceEventHandler</code></div>
         <span class="flow-arrow">→</span>
-        <div class="flow-step">场景拾取<br><code>scene.pick(position)</code></div>
+        <div class="flow-step">执行场景拾取<br><code>scene.pick(position)</code></div>
         <span class="flow-arrow">→</span>
-        <div class="flow-step">类型判断<br><code>Entity</code> or <code>3DTileFeature</code>?</div>
+        <div class="flow-step">判断拾取类型<br>Entity / Cesium3DTileFeature / 其他</div>
         <span class="flow-arrow">→</span>
-        <div class="flow-step">UI 反馈<br>弹窗 / 高亮 / 控制台</div>
+        <div class="flow-step">业务处理<br>弹窗 / 高亮 / 调用后端</div>
     </div>
 
-    <h3>拾取分支判断</h3>
+    <h3>拾取分支判断详解</h3>
     <div class="card-grid">
         <div class="card">
             <h4>Entity 拾取</h4>
             <p>判断条件：<code>picked.id instanceof Cesium.Entity</code></p>
             <p>读取属性：<code>entity.properties.getValue()</code></p>
-            <p>场景：点标注、自定义图标、路径对象</p>
+            <p>适用场景：点标注、自定义图标、路径对象等。</p>
         </div>
         <div class="card">
-            <h4>模型加载后查询</h4>
-            <p>加载方式：<code>Entity + model</code> 或 <code>Model.fromGltf</code></p>
-            <p>拾取后同样返回 Entity，通过 <code>entity.model</code> 判断是否为模型</p>
-            <p>场景：加载 glTF/glb 模型后查询其挂载的业务属性</p>
+            <h4>模型（glTF）拾取</h4>
+            <p>加载方式：通过 <code>Entity + model</code> 或 <code>Model.fromGltf</code> 加载的 3D 模型。</p>
+            <p>拾取后同样返回 Entity，可通过 <code>entity.model</code> 判断是否为模型。</p>
+            <p>适用场景：单体建筑、设备模型等精细模型挂载的属性查询。</p>
         </div>
         <div class="card">
             <h4>3D Tiles 要素拾取</h4>
             <p>判断条件：<code>picked instanceof Cesium3DTileFeature</code></p>
-            <p>读取属性：<code>feature.getProperty(name)</code></p>
-            <p>场景：倾斜摄影建筑、BIM 构件、管线</p>
+            <p>读取属性：通过 <code>feature.getProperty(name)</code> 获取批量属性表中的字段。</p>
+            <p>适用场景：倾斜摄影建筑、BIM 构件、管线等大规模瓦片数据。</p>
         </div>
         <div class="card">
-            <h4>地理坐标查询倾斜影像</h4>
-            <p>输入经纬度 → 飞行定位 → 屏幕中心拾取 3D Tiles</p>
-            <p>适用于：已知坐标反查倾斜摄影要素属性</p>
-            <p>场景：根据 GPS 坐标定位建筑、管线等实体</p>
+            <h4>根据坐标查询倾斜摄影</h4>
+            <p>输入经纬度 → 相机飞行定位到该点 → 使用屏幕中心点拾取 3D Tiles 要素。</p>
+            <p>适用于已知 GPS 坐标但需要反查建筑、管线属性的场景。</p>
         </div>
         <div class="card">
-            <h4>空白区域</h4>
-            <p>拾取方式：<code>scene.pickPosition()</code></p>
-            <p>转换坐标：<code>Cartographic.fromCartesian()</code></p>
-            <p>场景：获取地理坐标、高程查询</p>
+            <h4>空白区域（无拾取对象）</h4>
+            <p>拾取方式：<code>scene.pickPosition()</code> 获取屏幕点对应的世界坐标。</p>
+            <p>转换坐标：<code>Cartographic.fromCartesian()</code> 得到经纬度高程。</p>
+            <p>适用场景：获取点击位置的地理坐标、查询高程值。</p>
         </div>
     </div>
 
     <div class="alert alert-warn">
         <span class="alert-icon">⚠</span>
-        <div>拾取只取 ID，详情走后端接口，别把全量业务数据挂到 <code>properties</code> 上。</div>
+        <div>对于 3D Tiles 要素，建议前端只提取唯一 ID，然后通过 ID 调用后端业务接口获取全量详情，避免将大量业务属性直接挂载到 <code>properties</code> 中造成内存压力。</div>
     </div>
 
-    <a class="demo-btn" href="demo-03-pick.html" target="cesium-demo">打开示例 → demo-03-pick.html</a>
+    <a class="demo-btn" href="demo-03-pick.html" target="cesium-demo">打开示例 demo-03-pick.html</a>
 </section>
 
 <!-- ════════════════════ 模块四 ════════════════════ -->
 <section id="mod4">
     <div class="section-tag">Module 04</div>
-    <h2>坐标<span>不要搞反</span></h2>
-    <p style="font-size:15px;color:var(--text-dim);margin-bottom:24px;">三维开发中 80% 的"数据跑偏了"都是坐标系问题。这个模块讲清楚 Cesium 内部用什么坐标、GIS 行业有哪些标准、怎么在它们之间转换。</p>
+    <h2>坐标系<span>理解与转换</span></h2>
+    <p style="font-size:15px;color:var(--text-dim);margin-bottom:24px;">三维开发中 80% 的"数据位置不对"问题都源自坐标系混乱。本节讲清楚 Cesium 内部使用的坐标体系、GIS 行业常用标准，以及它们之间的转换方法。</p>
 
-    <h3>Cesium 中的三种坐标系</h3>
+    <h3>Cesium 中的三种坐标体系</h3>
     <table>
-        <thead><tr><th>坐标系</th><th>类型</th><th>表示方式</th><th>典型用途</th></tr></thead>
+        <thead><tr><th>坐标系</th><th>数据类型</th><th>表示方式</th><th>典型用途</th></tr></thead>
         <tbody>
             <tr>
                 <td><strong>WGS84 经纬度</strong></td>
                 <td><code>Cartographic</code></td>
                 <td>经度 (°) / 纬度 (°) / 高程 (m)</td>
-                <td>GPS 定位、用户输入坐标、地理编码</td>
+                <td>GPS 定位、用户输入坐标、地理编码结果</td>
             </tr>
             <tr>
-                <td><strong>笛卡尔坐标</strong></td>
+                <td><strong>笛卡尔空间坐标</strong></td>
                 <td><code>Cartesian3</code></td>
-                <td>X / Y / Z（米，地心坐标系）</td>
-                <td>Entity 定位、空间距离计算、模型变换</td>
+                <td>X / Y / Z（单位：米，地心坐标系）</td>
+                <td>Entity 定位、空间距离计算、模型矩阵变换</td>
             </tr>
             <tr>
                 <td><strong>屏幕坐标</strong></td>
                 <td><code>Cartesian2</code></td>
-                <td>px_x / px_y</td>
+                <td>像素 x / 像素 y</td>
                 <td>鼠标交互、UI 弹窗定位、拾取操作</td>
             </tr>
         </tbody>
     </table>
 
-    <h3>GIS 行业常用坐标系（EPSG 编码）</h3>
+    <h3>GIS 常用坐标系（EPSG 编码）</h3>
     <table>
         <thead><tr><th>EPSG</th><th>名称</th><th>类型</th><th>使用场景</th></tr></thead>
         <tbody>
@@ -433,57 +432,57 @@
                 <td><strong>4326</strong></td>
                 <td>WGS 84</td>
                 <td>地理坐标（经纬度）</td>
-                <td>GPS 全球标准；<strong>Cesium 内部默认坐标系</strong></td>
+                <td>全球 GPS 标准；<strong>Cesium 内部默认使用的坐标参照系</strong></td>
             </tr>
             <tr>
                 <td><strong>3857</strong></td>
                 <td>Web Mercator</td>
                 <td>投影坐标（米）</td>
-                <td>Google Maps / OSM / 天地图 Web 瓦片；正方形切割，高纬度变形严重</td>
+                <td>Google Maps / OSM / 天地图 Web 瓦片；采用正方形切片，高纬度地区变形明显</td>
             </tr>
             <tr>
                 <td><strong>4490</strong></td>
                 <td>CGCS2000 地理</td>
                 <td>地理坐标（经纬度）</td>
-                <td>中国国家标准（天地图、自然资源部），与 WGS84 差异 &lt; 1cm</td>
+                <td>中国国家标准（天地图、自然资源部数据），与 WGS84 差异小于 1 厘米</td>
             </tr>
             <tr>
                 <td><strong>4548</strong></td>
                 <td>CGCS2000 / 3°带投影</td>
                 <td>投影坐标（米）</td>
-                <td>国土测绘、城市规划、工程测量，iDesktop 制图常用</td>
+                <td>国内测绘、城市规划、工程测量，超图 iDesktop 制图常用</td>
             </tr>
         </tbody>
     </table>
 
-    <h3>超图工具链中的坐标系</h3>
+    <h3>超图工具链中的坐标系处理</h3>
     <div class="card-grid">
         <div class="card">
-            <h4>iDesktop（桌面端制图）</h4>
-            <p>数据入库时设定坐标系。测绘数据常用 CGCS2000 (4490/4548)，互联网数据常用 WGS84 (4326)。<strong>坐标系在此阶段确定，后续流程必须一致。</strong></p>
+            <h4>iDesktop（桌面端）</h4>
+            <p>数据入库时需设定坐标系。测绘数据多用 CGCS2000 (4490/4548)，互联网数据多用 WGS84 (4326)。<strong>坐标系在此环节确定，后续流程必须保持一致。</strong></p>
         </div>
         <div class="card">
             <h4>iServer（服务发布）</h4>
-            <p>发布三维服务时可配置动态投影。REST 接口返回的坐标默认与数据源一致，也可在请求参数中指定 <code>prjCoordSys</code> 转换。</p>
+            <p>发布三维服务时可配置动态投影。REST 接口返回的坐标默认与数据源相同，也可在请求参数中指定 <code>prjCoordSys</code> 进行动态投影转换。</p>
         </div>
         <div class="card">
             <h4>Cesium 前端加载</h4>
-            <p>Cesium 内部统一使用 WGS84 + Cartesian3。CGCS2000 (4490) 与 WGS84 (4326) 在实际使用中差异极小（&lt;1cm），可直接当作 4326 使用。</p>
+            <p>Cesium 内部统一使用 WGS84（经度/纬度/高度）和 Cartesian3（地心直角坐标）。CGCS2000 (4490) 与 WGS84 (4326) 差异极小（<1cm），实际使用中可直接当作 4326 处理。</p>
         </div>
     </div>
 
     <div class="alert alert-warn">
         <span class="alert-icon">⚠</span>
-        <div>数据偏移？先查数据源和加载端坐标系是否一致。Cesium 内部全部基于 WGS84 (4326)。</div>
+        <div>遇到数据偏移或位置错误，优先检查数据源的坐标系与加载端是否一致。Cesium 所有内部运算均基于 WGS84 (4326)。</div>
     </div>
 
-    <h3>核心转换流程</h3>
+    <h3>核心坐标转换链路</h3>
     <div class="flow">
         <div class="flow-step">WGS84 经纬度<br><code>(lng, lat, alt)</code></div>
         <span class="flow-arrow">⇄</span>
-        <div class="flow-step">Cartesian3 笛卡尔<br><code>(x, y, z)</code></div>
+        <div class="flow-step">Cartesian3 地心坐标<br><code>(x, y, z)</code></div>
         <span class="flow-arrow">⇄</span>
-        <div class="flow-step">屏幕坐标<br><code>(px, py)</code></div>
+        <div class="flow-step">屏幕像素坐标<br><code>(px, py)</code></div>
     </div>
 
     <h3>关键转换 API</h3>
@@ -496,76 +495,70 @@
         <div class="card">
             <h4>Cartesian3 → 经纬度</h4>
             <p><code>Cesium.Cartographic.fromCartesian(cartesian)</code></p>
-            <p style="color:var(--text-dim);font-size:13px;">返回弧度值，需配合 <code>Math.toDegrees()</code> 转角度。</p>
+            <p style="color:var(--text-dim);font-size:13px;">返回弧度值，需用 <code>Math.toDegrees()</code> 转成角度。</p>
         </div>
         <div class="card">
-            <h4>屏幕 → 世界坐标</h4>
-            <p><code>scene.pickPosition(screenPos)</code></p>
-            <p><code>camera.pickEllipsoid(screenPos)</code></p>
-            <p style="color:var(--text-dim);font-size:13px;">前者考虑地形/模型深度，后者仅椭球面。</p>
+            <h4>屏幕坐标 → 世界坐标</h4>
+            <p><code>scene.pickPosition(screenPos)</code>（考虑地形/模型深度）<br><code>camera.pickEllipsoid(screenPos)</code>（仅椭球面）</p>
         </div>
         <div class="card">
-            <h4>世界坐标 → 屏幕</h4>
+            <h4>世界坐标 → 屏幕坐标</h4>
             <p><code>SceneTransforms.wgs84ToWindowCoordinates(scene, cartesian)</code></p>
-            <p style="color:var(--text-dim);font-size:13px;">用于在 3D 对象上方叠加 HTML 弹窗。</p>
+            <p style="color:var(--text-dim);font-size:13px;">用于在 3D 物体上方准确叠加 HTML 弹窗或 UI 元素。</p>
         </div>
     </div>
 
-    <div class="alert alert-info">
-        <span class="alert-icon">💡</span>
-        <div>坐标转换 API（<code>Cartesian3</code>、<code>Cartographic</code>、<code>Math</code>）为 Cesium 核心模块，CDN 版和超图版通用。</div>
-    </div>
 
-    <a class="demo-btn" href="demo-04-coordinates.html" target="cesium-demo">打开示例 → demo-04-coordinates.html</a>
+    <a class="demo-btn" href="demo-04-coordinates.html" target="cesium-demo">打开示例 demo-04-coordinates.html</a>
 </section>
 
 <!-- ════════════════════ 模块五 ════════════════════ -->
 <section id="mod5">
     <div class="section-tag">Module 05</div>
-    <h2>出了问题<span>怎么查</span></h2>
-    <p style="font-size:15px;color:var(--text-dim);margin-bottom:24px;">白屏、黑屏、模型飘在天上、瓦片死活加载不出来——这些"经典翻车"你迟早会遇到。掌握调试工具，10 分钟定位问题比 2 小时瞎猜强。</p>
+    <h2>问题<span>排查与调试</span></h2>
+    <p style="font-size:15px;color:var(--text-dim);margin-bottom:24px;">白屏、黑屏、模型飘在半空、瓦片加载失败——这些"经典故障"每个人都会遇到。掌握调试工具和方法，10 分钟定位问题远胜于 2 小时盲目猜测。</p>
 
-    <h3>核心调试工具</h3>
+    <h3>核心调试工具组合</h3>
     <div class="card-grid">
         <div class="card">
             <h4>Cesium Inspector（通用场景）</h4>
-            <p><code>viewer.extend(Cesium.viewerCesiumInspectorMixin)</code><br>查看地形渲染、深度缓冲、拾取信息、Primitive 包围球。<strong>通用调试首选。</strong></p>
+            <p><code>viewer.extend(Cesium.viewerCesiumInspectorMixin)</code><br>可查看地形渲染状态、深度缓冲、拾取信息、Primitive 包围盒。<strong>通用场景调试首选。</strong></p>
         </div>
         <div class="card">
             <h4>3D Tiles Inspector（瓦片专用）</h4>
-            <p><code>viewer.extend(Cesium.viewerCesium3DTilesInspectorMixin)</code><br>专门针对 3D Tiles 数据集：查看瓦片树、LOD 层级、内存占用、包围盒可视化。</p>
+            <p><code>viewer.extend(Cesium.viewerCesium3DTilesInspectorMixin)</code><br>专门针对 3D Tiles 数据集：查看瓦片树结构、LOD 层级、内存占用，并可可视化包围盒与线框。</p>
         </div>
         <div class="card">
             <h4>浏览器 Network 面板</h4>
-            <p>过滤 <code>b3dm</code> / <code>i3dm</code> / <code>terrain</code> 等关键字，观察请求数、响应时间、是否返回 404/CORS 错误。</p>
+            <p>过滤 <code>b3dm</code>、<code>i3dm</code>、<code>terrain</code> 等关键字，观察请求数量、响应时间、HTTP 状态码（404/CORS 等）。</p>
         </div>
         <div class="card">
-            <h4>Console 调试</h4>
-            <p>使用 <code>viewer.entities.values</code> 遍历实体列表；<code>viewer.scene.primitives</code> 查看 Primitive 集合；<code>viewer.camera</code> 获取相机位姿。</p>
+            <h4>Console 控制台</h4>
+            <p>使用 <code>viewer.entities.values</code> 列出所有 Entity；<code>viewer.scene.primitives</code> 查看 Primitive 集合；<code>viewer.camera</code> 获取当前相机位姿参数。</p>
         </div>
     </div>
 
     <div class="alert alert-info">
         <span class="alert-icon">💡</span>
-        <div><strong>超图版本差异：</strong>超图 Cesium 中对应的调试器为 <code>SuperMap3D.Cesium3DTilesInspector</code>，用法类似但类名不同。如果你使用超图 SDK，Inspector 的接入方式需参考超图文档。CDN 社区版和超图版的 Inspector 功能基本一致，但内部实现和挂载方式有差异。</div>
+        <div><strong>超图定制版差异：</strong>超图 Cesium 中对应的调试器为 <code>SuperMap3D.Cesium3DTilesInspector</code>，类名不同但用法类似。</div>
     </div>
 
-    <h3>常见症状自查表</h3>
+    <h3>常见症状与排查方向</h3>
     <table>
         <thead><tr><th>症状</th><th>可能原因</th><th>排查方向</th></tr></thead>
         <tbody>
-            <tr><td>白屏</td><td>WebGL 上下文丢失</td><td>检查 GPU 驱动 / 浏览器硬件加速开关</td></tr>
-            <tr><td>黑屏（无底图）</td><td>影像服务未响应或 Token 无效</td><td>Network 面板检查影像 URL 返回状态</td></tr>
-            <tr><td>模型悬空</td><td>未设置 <code>heightReference</code></td><td>改为 <code>CLAMP_TO_GROUND</code> 或调整高度偏移</td></tr>
-            <tr><td>模型沉入地下</td><td>地形精度不匹配</td><td>检查 <code>modelMatrix</code> 或 <code>heightOffset</code></td></tr>
-            <tr><td>跨域错误（CORS）</td><td>资源服务器未配置 CORS 头</td><td>服务端添加 <code>Access-Control-Allow-Origin</code></td></tr>
-            <tr><td>瓦片闪烁 / 加载慢</td><td>SSE 设置过小 / 网络瓶颈</td><td>增大 <code>maximumScreenSpaceError</code> 值</td></tr>
-            <tr><td>帧率极低</td><td>Entity 过多 / 未启用按需渲染</td><td>改用 Primitive + <code>requestRenderMode</code></td></tr>
-            <tr><td>401 Unauthorized</td><td>Ion Token 过期或权限不足</td><td>前往 <code>ion.cesium.com</code> 重新生成</td></tr>
+            <tr><td>白屏（无任何渲染）</td><td>WebGL 上下文丢失</td><td>检查 GPU 驱动 / 浏览器硬件加速设置</td></tr>
+            <tr><td>黑屏（有控件但无底图）</td><td>影像服务未响应或 Token 失效</td><td>Network 面板查看影像请求的 HTTP 状态</td></tr>
+            <tr><td>模型悬空或浮在空中</td><td>未设置 <code>heightReference</code> 或高度偏移错误</td><td>设置为 <code>CLAMP_TO_GROUND</code> 或调整高度值</td></tr>
+            <tr><td>模型沉入地下</td><td>地形精度与模型高度不匹配</td><td>检查 <code>modelMatrix</code> 或增加高度偏移</td></tr>
+            <tr><td>跨域错误（CORS）</td><td>资源服务器未配置跨域响应头</td><td>服务端添加 <code>Access-Control-Allow-Origin: *</code></td></tr>
+            <tr><td>瓦片闪烁或加载缓慢</td><td>SSE 值过小 / 网络瓶颈</td><td>适当增大 <code>maximumScreenSpaceError</code> 参数</td></tr>
+            <tr><td>帧率极低</td><td>Entity 数量过多 / 未开启按需渲染</td><td>改用 Primitive 批量渲染，开启 <code>requestRenderMode</code></td></tr>
+            <tr><td>401 Unauthorized</td><td>Cesium Ion Token 过期或权限不足</td><td>前往 <code>ion.cesium.com</code> 重新生成 Token</td></tr>
         </tbody>
     </table>
 
-    <a class="demo-btn" href="demo-01-loading.html?debug" target="cesium-demo">打开示例 → demo-01-loading.html?debug</a>
+    <a class="demo-btn" href="demo-01-loading.html?debug" target="cesium-demo">打开示例 demo-01-loading.html?debug</a>
 </section>
 
 <!-- ════════════════════ 总结 ════════════════════ -->
@@ -578,17 +571,17 @@
         <tbody>
             <tr>
                 <td><strong>数据加载</strong></td>
-                <td>看到数据格式就知道用哪个 API</td>
+                <td>识别数据格式，选对加载 API</td>
                 <td>影像 → <code>ImageryProvider</code>，3D Tiles → <code>Cesium3DTileset</code>，glTF → <code>Entity.model</code>，矢量 → <code>DataSource.load()</code></td>
             </tr>
             <tr>
                 <td><strong>Entity API</strong></td>
-                <td>Entity 够用就用，量大切 Primitive</td>
-                <td><code>entities.add()</code> 挂 <code>properties</code>，≤100 个无压力；超过则用 <code>PointPrimitiveCollection</code></td>
+                <td>轻量业务用 Entity，量大切 Primitive</td>
+                <td><code>entities.add()</code> 挂 <code>properties</code>，≤100 个流畅；超过则考虑 <code>PointPrimitiveCollection</code></td>
             </tr>
             <tr>
                 <td><strong>属性查询</strong></td>
-                <td>拾取后按类型分支处理</td>
+                <td>拾取后按对象类型分支处理</td>
                 <td><code>picked.id instanceof Entity</code> → 标注；<code>picked instanceof Cesium3DTileFeature</code> → 瓦片要素；其余 → <code>pickPosition()</code></td>
             </tr>
             <tr>
@@ -598,7 +591,7 @@
             </tr>
             <tr>
                 <td><strong>调试排查</strong></td>
-                <td>Inspector + Network + Console 三件套定位问题</td>
+                <td>Inspector + Network + Console 三件套</td>
                 <td><code>viewerCesiumInspectorMixin</code> 看场景状态；Network 过滤 <code>b3dm/terrain</code>；Console 查 <code>viewer.camera</code></td>
             </tr>
         </tbody>
@@ -606,13 +599,13 @@
 
     <h3>示例文件索引</h3>
     <table>
-        <thead><tr><th>文件</th><th>对应模块</th><th>核心演示</th></tr></thead>
+        <thead><tr><th>文件</th><th>对应模块</th><th>核心演示内容</th></tr></thead>
         <tbody>
-            <tr><td><a href="demo-01-loading.html" target="cesium-demo" style="color:var(--accent);">demo-01-loading.html</a></td><td>数据类型</td><td>影像 + 地形 + 3D Tiles 叠加加载</td></tr>
-            <tr><td><a href="demo-02-entity.html" target="cesium-demo" style="color:var(--accent);">demo-02-entity.html</a></td><td>Entity API</td><td>实体增删改查 + 属性绑定</td></tr>
-            <tr><td><a href="demo-03-pick.html" target="cesium-demo" style="color:var(--accent);">demo-03-pick.html</a></td><td>属性查询</td><td>Entity / 3D Tiles 拾取分支</td></tr>
-            <tr><td><a href="demo-04-coordinates.html" target="cesium-demo" style="color:var(--accent);">demo-04-coordinates.html</a></td><td>坐标系统</td><td>WGS84 ⇄ Cartesian3 互转 + 实时坐标跟踪</td></tr>
-            <tr><td><a href="demo-01-loading.html?debug" target="cesium-demo" style="color:var(--accent);">demo-01-loading.html?debug</a></td><td>调试体检</td><td>在示例一场景上启用 Inspector / FPS / Console 调试</td></tr>
+            <tr><td><a href="demo-01-loading.html" target="cesium-demo" style="color:var(--accent);">demo-01-loading.html</a></td><td>数据加载</td><td>影像 + 地形 + 3D Tiles 三层叠加</td></tr>
+            <tr><td><a href="demo-02-entity.html" target="cesium-demo" style="color:var(--accent);">demo-02-entity.html</a></td><td>Entity API</td><td>实体的增删改查及业务属性绑定</td></tr>
+            <tr><td><a href="demo-03-pick.html" target="cesium-demo" style="color:var(--accent);">demo-03-pick.html</a></td><td>属性查询</td><td>Entity 与 3D Tiles 的拾取分支演示</td></tr>
+            <tr><td><a href="demo-04-coordinates.html" target="cesium-demo" style="color:var(--accent);">demo-04-coordinates.html</a></td><td>坐标系统</td><td>WGS84 ↔ Cartesian3 实时互转演示</td></tr>
+            <tr><td><a href="demo-01-loading.html?debug" target="cesium-demo" style="color:var(--accent);">demo-01-loading.html?debug</a></td><td>调试排查</td><td>在加载示例基础上启用 Inspector / FPS / Console 调试</td></tr>
         </tbody>
     </table>
 </section>
@@ -621,22 +614,21 @@
 <section id="qa">
     <div class="section-tag">Q &amp; A</div>
     <h2>答疑<span>环节</span></h2>
-    <p class="qa-line">"这个效果能不能做？"</p>
-    <p class="qa-big">能，关键看数据量和格式。</p>
-    <p class="qa-line" style="margin-top:32px;">"数据加载出来但位置不对？"</p>
-    <p class="qa-big">先查坐标系，再查参数顺序。</p>
-    <p class="qa-line" style="margin-top:32px;">"帧率只有个位数？"</p>
-    <p class="qa-big">Entity 换 Primitive，SSE 调大。</p>
+    <p class="qa-line">"这个功能能不能实现？"</p>
+    <p class="qa-big">能，关键看数据量大小和数据格式是否支持。</p>
+    <p class="qa-line" style="margin-top:32px;">"数据加载出来但位置偏了？"</p>
+    <p class="qa-big">先检查坐标系是否一致，再确认参数输入顺序（经度在前）。</p>
+    <p class="qa-line" style="margin-top:32px;">"帧率很低，操作卡顿？"</p>
+    <p class="qa-big">Entity 数量过多请改用 Primitive，或适当调大 SSE 值以降低细节。</p>
     <p class="qa-line" style="margin-top:48px;font-size:16px;color:var(--text-dim);">
-        现在开始提问，技术细节 / 项目实践都可以聊。
+        现在开始提问，技术细节或项目实践均可交流。
     </p>
 </section>
 
 <!-- ════════════════════ FOOTER ════════════════════ -->
 <footer>
-    Cesium 新人技术分享 · 2026 &nbsp;|&nbsp; 讲用法不讲源码，讲场景不讲原理
+    Cesium 三维可视化开发全流程 · 内部分享 2026 &nbsp;|&nbsp; 讲用法不讲源码，讲场景不讲原理
 </footer>
-
 <!-- ════════════════════ NAV HIGHLIGHT ════════════════════ -->
 <script>
     const sections = document.querySelectorAll('section');

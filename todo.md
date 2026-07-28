@@ -178,3 +178,47 @@ viewer.extend(Cesium.viewerCesium3DTilesInspectorMixin);
 
 ---
 坐标系统与空间计算，要精简布局；默认高度设置43.5米，而不是0；坐标系下拉框option背景色为白色，字体也为白色，调整以增加对比度；
+
+---
+
+1. 基于review文档优化，修复所有的问题
+2. 讲解文档简化样式，避免出现过多的颜色要素；统一表格样式
+3. alert-warn我感觉不是很有必要讲的太复杂，要言简意赅
+4. 总结部分再打磨一下：
+```
+Summary
+五句话带走
+1. 数据决定 API
+看到 WMS/WMTS → ImageryProvider
+看到 GeoJSON/KML → DataSource.load()
+看到 3D Tiles → Cesium3DTileset
+看到 glTF → Entity.model 或 Model.fromGltfAsync
+看到 S3M → 只能用超图版 addS3MTilesLayerByScp
+
+2. Entity 是画笔，Primitive 是性能
+标注 ≤100 个 → entities.add() 够用
+标注 >100 个 → 切 PointPrimitiveCollection
+业务属性挂 properties，拾取时直接读
+
+3. 拾取三分支
+picked.id instanceof Entity → 标注点
+picked instanceof Cesium3DTileFeature → 建筑/BIM
+都不是 → pickPosition() 取地理坐标
+
+4. 经纬度一定是 (经度, 纬度)
+fromDegrees(lng, lat, alt) — 不是 (lat, lng)
+WGS84 ⇄ Cartesian3 ⇄ 屏幕坐标
+全链路都走这三步
+
+5. 出问题先查这三处
+① Inspector → 看瓦片/地形加载状态
+② Network 面板 → 过滤 b3dm / terrain
+③ Console → viewer.camera 确认位置
+```
+- “五句话带走”标题很奇怪，不知所云
+- 经纬度没必要强调
+- “出问题先查这三处” 这个也不能总结讲解内容中的debug模块
+- 其实最终的总结要对之前表述的内容进行总结，而不是随便补充
+
+---
+Q&A的地方要重新打磨
