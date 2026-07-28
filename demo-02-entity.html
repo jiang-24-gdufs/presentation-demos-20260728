@@ -61,6 +61,10 @@
         <button onclick="addPipelineDemo()">管线路径标注</button>
         <button onclick="addAreaFenceDemo()">区域围栏</button>
         <button onclick="addTrajectoryDemo()">车辆轨迹回放</button>
+        <hr style="border:none;border-top:1px solid #526f82;margin:10px 0;">
+        <h3>Primitive 对比</h3>
+        <button onclick="addPrimitiveBatch()">Primitive 批量 500 个</button>
+        <button onclick="clearPrimitives()" class="danger">清空 Primitive</button>
     </div>
     <div id="queryPanel">
         <h3>查询实体</h3>
@@ -331,6 +335,42 @@
             });
             viewer.zoomTo(entities, new Cesium.HeadingPitchRange(0, Cesium.Math.toRadians(-45), 10000));
             updateCount();
+        }
+
+        // ── Primitive API 对比 ──
+        var pointCollection = null;
+
+        function addPrimitiveBatch() {
+            if (pointCollection) {
+                viewer.scene.primitives.remove(pointCollection);
+            }
+            pointCollection = new Cesium.PointPrimitiveCollection();
+            pointCollection.name = 'Primitive 点';
+            for (var i = 0; i < 500; i++) {
+                var lng = 100 + Math.random() * 30;
+                var lat = 20 + Math.random() * 20;
+                pointCollection.add({
+                    position: Cesium.Cartesian3.fromDegrees(lng, lat, 500),
+                    pixelSize: 6,
+                    color: Cesium.Color.fromHsl(Math.random(), 0.8, 0.6, 0.9)
+                });
+            }
+            viewer.scene.primitives.add(pointCollection);
+            document.getElementById('status').textContent =
+                '当前实体数：' + entities.values.length + ' | Primitive 点：500';
+            viewer.camera.flyTo({
+                destination: Cesium.Cartesian3.fromDegrees(115, 30, 5000000),
+                duration: 1.5
+            });
+        }
+
+        function clearPrimitives() {
+            if (pointCollection) {
+                viewer.scene.primitives.remove(pointCollection);
+                pointCollection = null;
+                document.getElementById('status').textContent =
+                    '当前实体数：' + entities.values.length + ' | Primitive 已清空';
+            }
         }
 
         // ── 实时相机坐标 ──

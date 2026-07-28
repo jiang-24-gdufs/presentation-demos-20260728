@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Cesium 新人技术分享</title>
+    <title>Cesium 三维可视化开发全流程</title>
     <style>
         :root {
             --bg-dark: #0a1628;
@@ -163,7 +163,6 @@
 
 <!-- ════════════════════ NAV ════════════════════ -->
 <nav>
-    <span class="brand">CesiumTalk</span>
     <a href="#hero">首页</a>
     <a href="#mod1">数据类型</a>
     <a href="#mod2">Entity API</a>
@@ -172,6 +171,7 @@
     <a href="#mod5">调试体检</a>
     <a href="#summary">总结</a>
     <a href="#qa">Q&amp;A</a>
+    <a href="#end">END</a>
 </nav>
 
 <!-- ════════════════════ HERO ════════════════════ -->
@@ -179,7 +179,6 @@
     <div class="section-tag">内部分享</div>
     <h1>Cesium <span>三维可视化</span> 开发全流程</h1>
     <p class="subtitle">完整链路：<strong>加载数据 → 绘制标注 → 点击查询 → 坐标换算 → 排查问题</strong><br>建立从零搭建可交互三维地球应用的完整认知</p>
-    <div class="meta"><strong>主讲人：</strong>___&emsp;&emsp;<strong>日期：</strong>2026 年 7 月 28 日</div>
 </section>
 
 <!-- ════════════════════ 模块一 ════════════════════ -->
@@ -327,9 +326,21 @@
         </tbody>
     </table>
 
+    <h3>Primitive 的典型用法</h3>
+    <p style="font-size:14px;color:var(--text-dim);margin-bottom:16px;">当 Entity 数量超过性能阈值时，直接使用 Primitive 集合类是唯一的出路。以下是最常用的几种：</p>
+    <table>
+        <thead><tr><th>集合类</th><th>用途</th><th>典型场景</th></tr></thead>
+        <tbody>
+            <tr><td><code>PointPrimitiveCollection</code></td><td>批量渲染纯色/纯大小的点</td><td>IoT 设备分布、GPS 轨迹点、热力底点</td></tr>
+            <tr><td><code>BillboardCollection</code></td><td>批量渲染图片图标</td><td>地图 POI 图标、车辆/设备标记</td></tr>
+            <tr><td><code>LabelCollection</code></td><td>批量渲染文字标签</td><td>大规模地名标注、编号标签</td></tr>
+            <tr><td><code>PolylineCollection</code></td><td>批量渲染线段</td><td>路网、管线网络可视化</td></tr>
+        </tbody>
+    </table>
+
     <div class="alert alert-warn">
         <span class="alert-icon">⚠</span>
-        <div>Entity 内部是对 Primitive 的封装，数量少时方便好用，但超过 100 个时帧率明显下降。对于大批量标注，建议直接使用 <code>PointPrimitiveCollection</code> 等 Primitive 方式。</div>
+        <div>Entity ≤100 个流畅，超过就切 Primitive。Primitive 无内置 <code>properties</code>，拾取后需自行维护 ID 映射。示例中可体验 500 个 Primitive 点的流畅渲染。</div>
     </div>
 
     <a class="demo-btn" href="demo-02-entity.html" target="cesium-demo">打开示例 demo-02-entity.html</a>
@@ -486,7 +497,7 @@
     </div>
 
     <h3>关键转换 API</h3>
-    <div class="card-grid">
+    <div class="card-grid" style="grid-template-columns: repeat(2, 1fr);">
         <div class="card">
             <h4>经纬度 → Cartesian3</h4>
             <p><code>Cesium.Cartesian3.fromDegrees(lng, lat, alt)</code></p>
@@ -519,7 +530,7 @@
     <p style="font-size:15px;color:var(--text-dim);margin-bottom:24px;">白屏、黑屏、模型飘在半空、瓦片加载失败——这些"经典故障"每个人都会遇到。掌握调试工具和方法，10 分钟定位问题远胜于 2 小时盲目猜测。</p>
 
     <h3>核心调试工具组合</h3>
-    <div class="card-grid">
+    <div class="card-grid" style="grid-template-columns: repeat(2, 1fr);">
         <div class="card">
             <h4>Cesium Inspector（通用场景）</h4>
             <p><code>viewer.extend(Cesium.viewerCesiumInspectorMixin)</code><br>可查看地形渲染状态、深度缓冲、拾取信息、Primitive 包围盒。<strong>通用场景调试首选。</strong></p>
@@ -613,21 +624,20 @@
 <!-- ════════════════════ Q&A ════════════════════ -->
 <section id="qa">
     <div class="section-tag">Q &amp; A</div>
-    <h2>答疑<span>环节</span></h2>
-    <p class="qa-line">"这个功能能不能实现？"</p>
-    <p class="qa-big">能，关键看数据量大小和数据格式是否支持。</p>
-    <p class="qa-line" style="margin-top:32px;">"数据加载出来但位置偏了？"</p>
-    <p class="qa-big">先检查坐标系是否一致，再确认参数输入顺序（经度在前）。</p>
-    <p class="qa-line" style="margin-top:32px;">"帧率很低，操作卡顿？"</p>
-    <p class="qa-big">Entity 数量过多请改用 Primitive，或适当调大 SSE 值以降低细节。</p>
-    <p class="qa-line" style="margin-top:48px;font-size:16px;color:var(--text-dim);">
-        现在开始提问，技术细节或项目实践均可交流。
-    </p>
+    <h2>提问<span>交流</span></h2>
+    <p style="font-size:18px;color:var(--text-dim);margin-top:40px;">技术细节、项目实践、踩坑经验，都可以聊。</p>
+</section>
+
+<!-- ════════════════════ END ════════════════════ -->
+<section id="end" style="display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;">
+    <h2 style="font-size:48px;font-weight:800;margin-bottom:16px;">Thank You</h2>
+    <p style="font-size:18px;color:var(--text-dim);margin-bottom:40px;">示例代码和讲解文档可随时查阅</p>
+    <p style="font-size:14px;color:var(--text-dim);">Cesium 三维可视化开发全流程 · 内部分享 2026.07</p>
 </section>
 
 <!-- ════════════════════ FOOTER ════════════════════ -->
 <footer>
-    Cesium 三维可视化开发全流程 · 内部分享 2026 &nbsp;|&nbsp; 讲用法不讲源码，讲场景不讲原理
+    Cesium 三维可视化开发全流程 · 内部分享 2026.07
 </footer>
 <!-- ════════════════════ NAV HIGHLIGHT ════════════════════ -->
 <script>
