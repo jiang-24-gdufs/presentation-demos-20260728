@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>模块三：属性查询（拾取）</title>
+    <link href="../Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+    <script src="../Build/Cesium/Cesium.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { width: 100%; height: 100%; overflow: hidden; font-family: 'Segoe UI', system-ui, sans-serif; }
+        #cesiumContainer { width: 100%; height: 100%; }
+        #header {
+            position: absolute; top: 0; left: 0; right: 0; z-index: 10;
+            background: linear-gradient(135deg, #0b1e3d 0%, #163a5f 100%);
+            padding: 14px 24px;
+            display: flex; align-items: center; justify-content: space-between;
+            border-bottom: 2px solid #2ec5ad;
+        }
+        #header h1 { color: #fff; font-size: 20px; font-weight: 600; }
+        #header h1 span { color: #2ec5ad; }
+        #header a {
+            color: #8ecae6; text-decoration: none; font-size: 14px;
+            padding: 6px 16px; border: 1px solid #8ecae6; border-radius: 4px;
+            transition: all .2s;
+        }
+        #header a:hover { background: #8ecae6; color: #0b1e3d; }
+        #guide {
+            position: absolute; top: 70px; left: 16px; z-index: 10;
+            background: rgba(11, 30, 61, .92); color: #fff;
+            padding: 16px 20px; border-radius: 8px; border: 1px solid #2ec5ad;
+            min-width: 260px; font-size: 13px;
+        }
+        #guide h3 { color: #2ec5ad; font-size: 15px; margin-bottom: 10px; }
+        #guide ol { padding-left: 18px; line-height: 2; }
+        #guide code { background: rgba(46,197,173,.2); padding: 2px 6px; border-radius: 3px; font-size: 12px; }
+        .warning {
+            margin-top: 12px; padding: 8px 12px;
+            background: rgba(255, 193, 7, .15); border-left: 3px solid #ffc107;
+            border-radius: 4px; font-size: 12px; color: #ffc107; line-height: 1.5;
+        }
+        #popup {
+            display: none; position: absolute; z-index: 20;
+            background: rgba(11, 30, 61, .95); color: #fff;
+            padding: 16px 20px; border-radius: 8px; border: 1px solid #2ec5ad;
+            min-width: 280px; font-size: 13px; pointer-events: auto;
+            box-shadow: 0 8px 32px rgba(0,0,0,.5);
+        }
+        #popup h4 { color: #2ec5ad; margin-bottom: 10px; font-size: 15px; }
+        #popup table { width: 100%; border-collapse: collapse; }
+        #popup td { padding: 4px 8px; border-bottom: 1px solid rgba(255,255,255,.1); }
+        #popup td:first-child { color: #8ecae6; white-space: nowrap; }
+        #popup .close-btn {
+            position: absolute; top: 8px; right: 12px;
+            background: none; border: none; color: #e74c3c; font-size: 18px; cursor: pointer;
+        }
+        #status {
+            position: absolute; bottom: 16px; left: 16px; z-index: 10;
+            background: rgba(11, 30, 61, .85); color: #8ecae6;
+            padding: 8px 14px; border-radius: 4px; font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div id="header">
+        <h1>模块三：<span>属性查询（拾取）</span></h1>
+        <a href="index.html">← 返回讲解文档</a>
+    </div>
+    <div id="cesiumContainer"></div>
+    <div id="guide">
+        <h3>操作指引</h3>
+        <ol>
+            <li>左键点击 <strong>Entity 点标记</strong> → 弹出业务属性</li>
+            <li>勾选加载 3D Tiles 后，左键点击 <strong>建筑要素</strong> → 弹出瓦片属性</li>
+            <li>点击空白区域 → 显示地理坐标</li>
+        </ol>
+        <label style="display:flex;align-items:center;gap:8px;margin-top:12px;cursor:pointer;">
+            <input type="checkbox" id="chkTiles" style="accent-color:#2ec5ad;width:16px;height:16px;">
+            加载 3D Tiles（倾斜摄影）
+        </label>
+        <div class="warning">
+            ⚠ 大数据场景：拾取只取 ID，详情走后端接口查询，避免前端内存暴涨。
+        </div>
+    </div>
+    <div id="popup">
+        <button class="close-btn" onclick="closePopup()">×</button>
+        <h4 id="popupTitle">属性详情</h4>
+        <table><tbody id="popupBody"></tbody></table>
+    </div>
+    <div id="status">点击场景中的对象进行拾取</div>
+
+    <script>
+        Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIxZDhlZWQ2MC0wM2Q3LTQ2ZTMtOTE0OC0yMTQ3ZDJhZDI3MzAiLCJpZCI6MzMzNjQ0LCJpYXQiOjE3NTU2NzU3Mzl9.Hm7yypyrQIHLy4Y55rdY_UiYXJMQr7hv-AjLRvoNg3U';
+
+        const viewer = new Cesium.Viewer('cesiumContainer', {
+            terrainProvider: Cesium.createWorldTerrain(),
+            baseLayerPicker: false, geocoder: false, homeButton: false,
+            sceneModePicker: false, navigationHelpButton: false,
+            animation: false, timeline: false, fullscreenButton: false,
+            selectionIndicator: true, infoBox: false
+        });
+
+        const sampleEntities = [
+            { id: 'poi-01', name: '天安门', lng: 116.3975, lat: 39.9087, status: '正常', category: '文化地标' },
+            { id: 'poi-02', name: '东方明珠', lng: 121.4997, lat: 31.2397, status: '告警', category: '通信设施' },
+            { id: 'poi-03', name: '广州塔', lng: 113.3245, lat: 23.1066, status: '正常', category: '观光设施' },
+            { id: 'poi-04', name: '西湖', lng: 120.1485, lat: 30.2427, status: '离线', category: '自然景观' },
+            { id: 'poi-05', name: '故宫', lng: 116.3972, lat: 39.9163, status: '正常', category: '文化地标' }
+        ];
+
+        const statusColors = {
+            '正常': Cesium.Color.fromCssColorString('#2ec5ad'),
+            '告警': Cesium.Color.fromCssColorString('#ffc107'),
+            '离线': Cesium.Color.fromCssColorString('#e74c3c')
+        };
+
+        sampleEntities.forEach(function (d) {
+            viewer.entities.add({
+                id: d.id,
+                name: d.name,
+                position: Cesium.Cartesian3.fromDegrees(d.lng, d.lat, 0),
+                point: {
+                    pixelSize: 14,
+                    color: statusColors[d.status],
+                    outlineColor: Cesium.Color.WHITE, outlineWidth: 2,
+                    heightReference: Cesium.HeightReference.CLAMP_TO_GROUND
+                },
+                label: {
+                    text: d.name,
+                    font: '14px sans-serif',
+                    fillColor: Cesium.Color.WHITE,
+                    outlineColor: Cesium.Color.BLACK, outlineWidth: 2,
+                    style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+                    verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+                    pixelOffset: new Cesium.Cartesian2(0, -20),
+                    heightReference: Cesium.HeightReference.CLAMP_TO_GROUND
+                },
+                properties: { bizId: d.id, status: d.status, category: d.category }
+            });
+        });
+        viewer.zoomTo(viewer.entities);
+
+        let tilesetInstance = null;
+        document.getElementById('chkTiles').addEventListener('change', function () {
+            if (this.checked) {
+                Cesium.Cesium3DTileset.fromIonAssetId(40866).then(function (tileset) {
+                    tilesetInstance = tileset;
+                    viewer.scene.primitives.add(tileset);
+                    viewer.zoomTo(tileset);
+                });
+            } else if (tilesetInstance) {
+                viewer.scene.primitives.remove(tilesetInstance);
+                tilesetInstance = null;
+            }
+        });
+
+        const popup = document.getElementById('popup');
+        const popupTitle = document.getElementById('popupTitle');
+        const popupBody = document.getElementById('popupBody');
+        const statusEl = document.getElementById('status');
+
+        function showPopup(screenPos, title, rows) {
+            popupTitle.textContent = title;
+            popupBody.innerHTML = rows.map(function (r) {
+                return '<tr><td>' + r[0] + '</td><td>' + r[1] + '</td></tr>';
+            }).join('');
+            popup.style.left = (screenPos.x + 16) + 'px';
+            popup.style.top = (screenPos.y + 16) + 'px';
+            popup.style.display = 'block';
+        }
+
+        function closePopup() { popup.style.display = 'none'; }
+
+        const handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
+
+        handler.setInputAction(function (click) {
+            closePopup();
+            const picked = viewer.scene.pick(click.position);
+
+            if (Cesium.defined(picked)) {
+                if (picked.id && picked.id instanceof Cesium.Entity) {
+                    const entity = picked.id;
+                    const props = entity.properties;
+                    statusEl.textContent = '拾取到 Entity: ' + entity.id;
+                    console.log('[Entity Pick]', entity);
+                    showPopup(click.position, 'Entity 属性', [
+                        ['ID', entity.id],
+                        ['名称', entity.name || 'N/A'],
+                        ['业务ID', props && props.bizId ? props.bizId.getValue() : 'N/A'],
+                        ['状态', props && props.status ? props.status.getValue() : 'N/A'],
+                        ['类别', props && props.category ? props.category.getValue() : 'N/A']
+                    ]);
+                    return;
+                }
+
+                if (picked instanceof Cesium.Cesium3DTileFeature) {
+                    const feature = picked;
+                    const propertyIds = feature.getPropertyIds();
+                    statusEl.textContent = '拾取到 3D Tiles Feature（' + propertyIds.length + ' 个属性）';
+                    console.log('[Tile Feature Pick]', feature);
+                    const rows = propertyIds.slice(0, 15).map(function (pid) {
+                        return [pid, String(feature.getProperty(pid))];
+                    });
+                    showPopup(click.position, '3D Tiles 要素属性', rows);
+                    return;
+                }
+            }
+
+            const cartesian = viewer.scene.pickPosition(click.position);
+            if (Cesium.defined(cartesian)) {
+                const carto = Cesium.Cartographic.fromCartesian(cartesian);
+                const lng = Cesium.Math.toDegrees(carto.longitude).toFixed(6);
+                const lat = Cesium.Math.toDegrees(carto.latitude).toFixed(6);
+                const alt = carto.height.toFixed(2);
+                statusEl.textContent = '空白区域 — 经度:' + lng + ' 纬度:' + lat + ' 高度:' + alt + 'm';
+                showPopup(click.position, '地理坐标', [
+                    ['经度', lng + '°'],
+                    ['纬度', lat + '°'],
+                    ['高程', alt + ' m']
+                ]);
+            } else {
+                statusEl.textContent = '未拾取到任何对象';
+            }
+        }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+    </script>
+</body>
+</html>

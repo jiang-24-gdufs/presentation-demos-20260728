@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>模块一：数据类型与加载</title>
+    <link href="../Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+    <script src="../Build/Cesium/Cesium.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { width: 100%; height: 100%; overflow: hidden; font-family: 'Segoe UI', system-ui, sans-serif; }
+        #cesiumContainer { width: 100%; height: 100%; }
+        #header {
+            position: absolute; top: 0; left: 0; right: 0; z-index: 10;
+            background: linear-gradient(135deg, #0b1e3d 0%, #163a5f 100%);
+            padding: 14px 24px;
+            display: flex; align-items: center; justify-content: space-between;
+            border-bottom: 2px solid #2ec5ad;
+        }
+        #header h1 { color: #fff; font-size: 20px; font-weight: 600; }
+        #header h1 span { color: #2ec5ad; }
+        #header a {
+            color: #8ecae6; text-decoration: none; font-size: 14px;
+            padding: 6px 16px; border: 1px solid #8ecae6; border-radius: 4px;
+            transition: all .2s;
+        }
+        #header a:hover { background: #8ecae6; color: #0b1e3d; }
+        #panel {
+            position: absolute; top: 70px; left: 16px; z-index: 10;
+            background: rgba(11, 30, 61, .92); color: #fff;
+            padding: 16px 20px; border-radius: 8px; border: 1px solid #2ec5ad;
+            min-width: 260px; font-size: 13px;
+        }
+        #panel h3 { color: #2ec5ad; font-size: 15px; margin-bottom: 12px; }
+        #panel label { display: flex; align-items: center; gap: 8px; padding: 6px 0; cursor: pointer; }
+        #panel input[type="checkbox"] { accent-color: #2ec5ad; width: 16px; height: 16px; }
+        .warning {
+            margin-top: 12px; padding: 8px 12px;
+            background: rgba(255, 193, 7, .15); border-left: 3px solid #ffc107;
+            border-radius: 4px; font-size: 12px; color: #ffc107; line-height: 1.5;
+        }
+        #status {
+            position: absolute; bottom: 16px; left: 16px; z-index: 10;
+            background: rgba(11, 30, 61, .85); color: #8ecae6;
+            padding: 8px 14px; border-radius: 4px; font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div id="header">
+        <h1>模块一：<span>数据类型与加载</span></h1>
+        <a href="index.html">← 返回讲解文档</a>
+    </div>
+    <div id="cesiumContainer"></div>
+    <div id="panel">
+        <h3>图层控制</h3>
+        <label><input type="checkbox" id="chkImagery" checked> 影像底图（Bing Maps）</label>
+        <label><input type="checkbox" id="chkTerrain" checked> 全球地形（Cesium World Terrain）</label>
+        <label><input type="checkbox" id="chkTiles"> 3D Tiles（倾斜摄影示例）</label>
+        <label><input type="checkbox" id="chkInspector"> 开启 Inspector（观察瓦片加载）</label>
+        <div class="warning">
+            ⚠ 倾斜摄影数据必须通过流式加载（3D Tiles），不可一次性全量加载至内存。
+        </div>
+    </div>
+    <div id="status">就绪</div>
+
+    <script>
+        // ====== 令牌配置 ======
+        Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIxZDhlZWQ2MC0wM2Q3LTQ2ZTMtOTE0OC0yMTQ3ZDJhZDI3MzAiLCJpZCI6MzMzNjQ0LCJpYXQiOjE3NTU2NzU3Mzl9.Hm7yypyrQIHLy4Y55rdY_UiYXJMQr7hv-AjLRvoNg3U';
+
+        const viewer = new Cesium.Viewer('cesiumContainer', {
+            terrainProvider: Cesium.createWorldTerrain(),
+            baseLayerPicker: false,
+            geocoder: false,
+            homeButton: false,
+            sceneModePicker: false,
+            navigationHelpButton: false,
+            animation: false,
+            timeline: false,
+            fullscreenButton: false,
+            selectionIndicator: false,
+            infoBox: false
+        });
+
+        const imageryLayer = viewer.imageryLayers.get(0);
+        let tilesetInstance = null;
+        let inspectorLoaded = false;
+
+        function setStatus(msg) {
+            document.getElementById('status').textContent = msg;
+        }
+
+        document.getElementById('chkImagery').addEventListener('change', function () {
+            imageryLayer.show = this.checked;
+            setStatus(this.checked ? '影像底图已显示' : '影像底图已隐藏');
+        });
+
+        document.getElementById('chkTerrain').addEventListener('change', function () {
+            viewer.terrainProvider = this.checked
+                ? Cesium.createWorldTerrain()
+                : new Cesium.EllipsoidTerrainProvider();
+            setStatus(this.checked ? '地形已加载' : '地形已移除（使用椭球面）');
+        });
+
+        document.getElementById('chkTiles').addEventListener('change', function () {
+            if (this.checked) {
+                setStatus('正在加载 3D Tiles …');
+                Cesium.Cesium3DTileset.fromIonAssetId(40866).then(function (tileset) {
+                    tilesetInstance = tileset;
+                    viewer.scene.primitives.add(tileset);
+                    viewer.zoomTo(tileset);
+                    setStatus('3D Tiles 加载完成（倾斜摄影）');
+                }).catch(function (err) {
+                    setStatus('3D Tiles 加载失败：' + err.message);
+                    console.error(err);
+                });
+            } else if (tilesetInstance) {
+                viewer.scene.primitives.remove(tilesetInstance);
+                tilesetInstance = null;
+                setStatus('3D Tiles 已移除');
+            }
+        });
+
+        document.getElementById('chkInspector').addEventListener('change', function () {
+            if (this.checked && !inspectorLoaded) {
+                viewer.extend(Cesium.viewerCesium3DTilesInspectorMixin);
+                inspectorLoaded = true;
+            }
+            const el = document.querySelector('.cesium-3DTilesInspector');
+            if (el) el.style.display = this.checked ? 'block' : 'none';
+            setStatus(this.checked ? 'Inspector 已开启' : 'Inspector 已关闭');
+        });
+    </script>
+</body>
+</html>

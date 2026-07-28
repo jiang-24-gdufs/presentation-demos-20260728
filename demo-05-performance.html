@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>模块五：性能优化</title>
+    <link href="../Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+    <script src="../Build/Cesium/Cesium.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { width: 100%; height: 100%; overflow: hidden; font-family: 'Segoe UI', system-ui, sans-serif; }
+        #cesiumContainer { width: 100%; height: 100%; }
+        #header {
+            position: absolute; top: 0; left: 0; right: 0; z-index: 10;
+            background: linear-gradient(135deg, #0b1e3d 0%, #163a5f 100%);
+            padding: 14px 24px;
+            display: flex; align-items: center; justify-content: space-between;
+            border-bottom: 2px solid #2ec5ad;
+        }
+        #header h1 { color: #fff; font-size: 20px; font-weight: 600; }
+        #header h1 span { color: #2ec5ad; }
+        #header a {
+            color: #8ecae6; text-decoration: none; font-size: 14px;
+            padding: 6px 16px; border: 1px solid #8ecae6; border-radius: 4px;
+            transition: all .2s;
+        }
+        #header a:hover { background: #8ecae6; color: #0b1e3d; }
+        #panel {
+            position: absolute; top: 70px; left: 16px; z-index: 10;
+            background: rgba(11, 30, 61, .92); color: #fff;
+            padding: 16px 20px; border-radius: 8px; border: 1px solid #2ec5ad;
+            min-width: 320px; font-size: 13px;
+        }
+        #panel h3 { color: #2ec5ad; font-size: 15px; margin-bottom: 12px; }
+        #panel .param-group { margin-bottom: 14px; }
+        #panel .param-label {
+            display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 12px;
+        }
+        #panel .param-label span { color: #8ecae6; }
+        #panel input[type="range"] {
+            width: 100%; accent-color: #2ec5ad; cursor: pointer;
+        }
+        #panel label { display: flex; align-items: center; gap: 8px; padding: 4px 0; cursor: pointer; }
+        #panel input[type="checkbox"] { accent-color: #2ec5ad; width: 16px; height: 16px; }
+        #panel hr { border: none; border-top: 1px solid #526f82; margin: 12px 0; }
+        #panel button {
+            display: block; width: 100%; padding: 8px 14px; margin: 6px 0;
+            background: #2ec5ad; color: #fff; border: none; border-radius: 4px;
+            cursor: pointer; font-size: 13px;
+        }
+        #panel button:hover { background: #26a08d; }
+        .warning {
+            margin-top: 12px; padding: 8px 12px;
+            background: rgba(231, 76, 60, .15); border-left: 3px solid #e74c3c;
+            border-radius: 4px; font-size: 12px; color: #e74c3c; line-height: 1.5;
+        }
+        #checklist {
+            position: absolute; top: 70px; right: 16px; z-index: 10;
+            background: rgba(11, 30, 61, .92); color: #fff;
+            padding: 16px 20px; border-radius: 8px; border: 1px solid #2ec5ad;
+            min-width: 300px; font-size: 13px;
+        }
+        #checklist h3 { color: #2ec5ad; font-size: 15px; margin-bottom: 10px; }
+        #checklist ol { padding-left: 18px; line-height: 2.2; }
+        #checklist .done { color: #2ec5ad; }
+        #checklist .tip { color: #ffc107; font-size: 11px; }
+        #fpsBar {
+            position: absolute; bottom: 16px; left: 16px; z-index: 10;
+            background: rgba(11, 30, 61, .92);
+            padding: 12px 20px; border-radius: 8px; border: 1px solid #2ec5ad;
+            display: flex; gap: 24px; align-items: center;
+            font-family: 'Consolas', monospace; font-size: 16px;
+        }
+        #fpsBar .metric { text-align: center; }
+        #fpsBar .metric .value { font-size: 28px; font-weight: bold; }
+        #fpsBar .metric .label { font-size: 11px; color: #8ecae6; margin-top: 2px; }
+        .fps-good { color: #2ec5ad; }
+        .fps-warn { color: #ffc107; }
+        .fps-bad { color: #e74c3c; }
+    </style>
+</head>
+<body>
+    <div id="header">
+        <h1>模块五：<span>性能优化</span></h1>
+        <a href="index.html">← 返回讲解文档</a>
+    </div>
+    <div id="cesiumContainer"></div>
+
+    <div id="panel">
+        <h3>性能参数调节</h3>
+
+        <div class="param-group">
+            <div class="param-label">maximumScreenSpaceError <span id="sseValue">16</span></div>
+            <input type="range" id="sseSlider" min="1" max="64" value="16" step="1">
+        </div>
+
+        <div class="param-group">
+            <div class="param-label">maximumMemoryUsage (MB) <span id="memValue">512</span></div>
+            <input type="range" id="memSlider" min="64" max="2048" value="512" step="64">
+        </div>
+
+        <div class="param-group">
+            <div class="param-label">resolutionScale <span id="resValue">1.0</span></div>
+            <input type="range" id="resSlider" min="0.25" max="2.0" value="1.0" step="0.05">
+        </div>
+
+        <hr>
+
+        <label><input type="checkbox" id="chkRequestRender"> requestRenderMode（按需渲染）</label>
+        <label><input type="checkbox" id="chkFog" checked> 雾效</label>
+        <label><input type="checkbox" id="chkShadows"> 阴影</label>
+        <label><input type="checkbox" id="chkMSAA" checked> MSAA 抗锯齿</label>
+
+        <hr>
+        <button onclick="loadHeavyScene()">加载重型场景（压力测试）</button>
+        <button onclick="resetDefaults()">恢复默认参数</button>
+
+        <div class="warning">
+            ⚠ SSE 越小精度越高但性能开销越大；移动端建议 ≥ 24。
+        </div>
+    </div>
+
+    <div id="checklist">
+        <h3>傻瓜式优化清单</h3>
+        <ol>
+            <li>开启 <code>requestRenderMode</code> <span class="tip">← 静态场景必开</span></li>
+            <li>调大 <code>maximumScreenSpaceError</code> 至 16~32</li>
+            <li>关闭阴影 <code>viewer.shadows = false</code></li>
+            <li>关闭雾效 <code>viewer.scene.fog.enabled = false</code></li>
+            <li>降低分辨率 <code>resolutionScale = 0.75</code></li>
+            <li>Entity &gt; 100 → 改用 Primitive</li>
+            <li>限制 <code>maximumMemoryUsage</code> 防内存溢出</li>
+            <li>使用 LOD（3D Tiles 自带多级细节）</li>
+        </ol>
+    </div>
+
+    <div id="fpsBar">
+        <div class="metric"><div class="value fps-good" id="fpsValue">--</div><div class="label">FPS</div></div>
+        <div class="metric"><div class="value" id="entityCount" style="color:#8ecae6;">0</div><div class="label">Entities</div></div>
+        <div class="metric"><div class="value" id="primitiveCount" style="color:#8ecae6;">0</div><div class="label">Primitives</div></div>
+        <div class="metric"><div class="value" id="sseDisplay" style="color:#8ecae6;">16</div><div class="label">SSE</div></div>
+    </div>
+
+    <script>
+        Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIxZDhlZWQ2MC0wM2Q3LTQ2ZTMtOTE0OC0yMTQ3ZDJhZDI3MzAiLCJpZCI6MzMzNjQ0LCJpYXQiOjE3NTU2NzU3Mzl9.Hm7yypyrQIHLy4Y55rdY_UiYXJMQr7hv-AjLRvoNg3U';
+
+        const viewer = new Cesium.Viewer('cesiumContainer', {
+            terrainProvider: Cesium.createWorldTerrain(),
+            baseLayerPicker: false, geocoder: false, homeButton: false,
+            sceneModePicker: false, navigationHelpButton: false,
+            animation: false, timeline: false, fullscreenButton: false,
+            selectionIndicator: false, infoBox: false,
+            shadows: false
+        });
+
+        let tilesetInstance = null;
+
+        const sseSlider = document.getElementById('sseSlider');
+        const memSlider = document.getElementById('memSlider');
+        const resSlider = document.getElementById('resSlider');
+
+        sseSlider.addEventListener('input', function () {
+            const val = Number(this.value);
+            document.getElementById('sseValue').textContent = val;
+            document.getElementById('sseDisplay').textContent = val;
+            if (tilesetInstance) tilesetInstance.maximumScreenSpaceError = val;
+        });
+
+        memSlider.addEventListener('input', function () {
+            const val = Number(this.value);
+            document.getElementById('memValue').textContent = val;
+            if (tilesetInstance) tilesetInstance.maximumMemoryUsage = val;
+        });
+
+        resSlider.addEventListener('input', function () {
+            const val = Number(this.value);
+            document.getElementById('resValue').textContent = val.toFixed(2);
+            viewer.resolutionScale = val;
+        });
+
+        document.getElementById('chkRequestRender').addEventListener('change', function () {
+            viewer.scene.requestRenderMode = this.checked;
+            viewer.scene.maximumRenderTimeChange = this.checked ? 0.0 : Infinity;
+            if (this.checked) viewer.scene.requestRender();
+        });
+
+        document.getElementById('chkFog').addEventListener('change', function () {
+            viewer.scene.fog.enabled = this.checked;
+        });
+
+        document.getElementById('chkShadows').addEventListener('change', function () {
+            viewer.shadows = this.checked;
+        });
+
+        document.getElementById('chkMSAA').addEventListener('change', function () {
+            viewer.scene.msaaSamples = this.checked ? 4 : 1;
+        });
+
+        function loadHeavyScene() {
+            for (let i = 0; i < 200; i++) {
+                viewer.entities.add({
+                    position: Cesium.Cartesian3.fromDegrees(
+                        100 + Math.random() * 30,
+                        20 + Math.random() * 20,
+                        0
+                    ),
+                    point: {
+                        pixelSize: 6 + Math.random() * 8,
+                        color: Cesium.Color.fromRandom({ alpha: 0.9 }),
+                        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND
+                    }
+                });
+            }
+
+            if (!tilesetInstance) {
+                Cesium.Cesium3DTileset.fromIonAssetId(40866).then(function (tileset) {
+                    tilesetInstance = tileset;
+                    tileset.maximumScreenSpaceError = Number(sseSlider.value);
+                    tileset.maximumMemoryUsage = Number(memSlider.value);
+                    viewer.scene.primitives.add(tileset);
+                    viewer.zoomTo(tileset);
+                });
+            }
+        }
+
+        function resetDefaults() {
+            sseSlider.value = 16; sseSlider.dispatchEvent(new Event('input'));
+            memSlider.value = 512; memSlider.dispatchEvent(new Event('input'));
+            resSlider.value = 1.0; resSlider.dispatchEvent(new Event('input'));
+            document.getElementById('chkRequestRender').checked = false;
+            viewer.scene.requestRenderMode = false;
+            document.getElementById('chkFog').checked = true;
+            viewer.scene.fog.enabled = true;
+            document.getElementById('chkShadows').checked = false;
+            viewer.shadows = false;
+            document.getElementById('chkMSAA').checked = true;
+            viewer.scene.msaaSamples = 4;
+        }
+
+        let lastTime = performance.now();
+        let frameCount = 0;
+        const fpsValueEl = document.getElementById('fpsValue');
+        const entityCountEl = document.getElementById('entityCount');
+        const primitiveCountEl = document.getElementById('primitiveCount');
+
+        function monitorLoop() {
+            frameCount++;
+            const now = performance.now();
+            if (now - lastTime >= 1000) {
+                const fps = frameCount;
+                fpsValueEl.textContent = fps;
+                fpsValueEl.className = 'value ' + (fps >= 50 ? 'fps-good' : fps >= 30 ? 'fps-warn' : 'fps-bad');
+                entityCountEl.textContent = viewer.entities.values.length;
+                primitiveCountEl.textContent = viewer.scene.primitives.length;
+                frameCount = 0;
+                lastTime = now;
+            }
+            requestAnimationFrame(monitorLoop);
+        }
+        monitorLoop();
+    </script>
+</body>
+</html>
