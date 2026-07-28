@@ -4,8 +4,15 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>模块一：数据类型与加载</title>
-    <link href="../Build/Cesium/Widgets/widgets.css" rel="stylesheet">
-    <script src="../Build/Cesium/Cesium.js"></script>
+    <!--
+        ⚠ 本示例使用 CDN 版 Cesium（社区开源版）。
+        如需切换为本地超图 Cesium，请替换下方两行引用为：
+        <link href="../Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+        <script src="../Build/Cesium/Cesium.js"></script>
+        注意：超图版本不支持 fromIonAssetId / fromAssetId 等静态工厂方法，需改用旧版构造函数 API。
+    -->
+    <link href="https://cesium.com/downloads/cesiumjs/releases/1.119/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+    <script src="https://cesium.com/downloads/cesiumjs/releases/1.119/Build/Cesium/Cesium.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html, body { width: 100%; height: 100%; overflow: hidden; font-family: 'Segoe UI', system-ui, sans-serif; }
@@ -19,6 +26,10 @@
         }
         #header h1 { color: #fff; font-size: 20px; font-weight: 600; }
         #header h1 span { color: #2ec5ad; }
+        #header .badge {
+            background: #2ec5ad; color: #0b1e3d; font-size: 11px; font-weight: 700;
+            padding: 2px 8px; border-radius: 3px; margin-left: 10px; vertical-align: middle;
+        }
         #header a {
             color: #8ecae6; text-decoration: none; font-size: 14px;
             padding: 6px 16px; border: 1px solid #8ecae6; border-radius: 4px;
@@ -26,110 +37,182 @@
         }
         #header a:hover { background: #8ecae6; color: #0b1e3d; }
         #panel {
-            position: absolute; top: 70px; left: 16px; z-index: 10;
-            background: rgba(11, 30, 61, .92); color: #fff;
+            position: absolute; top: 66px; left: 16px; z-index: 10;
+            background: rgba(11, 30, 61, .94); color: #fff;
             padding: 16px 20px; border-radius: 8px; border: 1px solid #2ec5ad;
-            min-width: 260px; font-size: 13px;
+            width: 310px; font-size: 13px; max-height: calc(100vh - 90px); overflow-y: auto;
         }
-        #panel h3 { color: #2ec5ad; font-size: 15px; margin-bottom: 12px; }
-        #panel label { display: flex; align-items: center; gap: 8px; padding: 6px 0; cursor: pointer; }
-        #panel input[type="checkbox"] { accent-color: #2ec5ad; width: 16px; height: 16px; }
+        #panel h3 { color: #2ec5ad; font-size: 14px; margin: 14px 0 8px; }
+        #panel h3:first-child { margin-top: 0; }
+        #panel label {
+            display: flex; align-items: center; gap: 8px; padding: 5px 8px;
+            cursor: pointer; border-radius: 4px; transition: background .15s;
+        }
+        #panel label:hover { background: rgba(46,197,173,.08); }
+        #panel input[type="radio"], #panel input[type="checkbox"] {
+            accent-color: #2ec5ad; width: 15px; height: 15px; flex-shrink: 0;
+        }
+        #panel .desc { font-size: 11px; color: #8ba3bf; margin-left: 23px; margin-top: -2px; }
         .warning {
-            margin-top: 12px; padding: 8px 12px;
-            background: rgba(255, 193, 7, .15); border-left: 3px solid #ffc107;
+            margin-top: 14px; padding: 8px 12px;
+            background: rgba(255, 193, 7, .12); border-left: 3px solid #ffc107;
             border-radius: 4px; font-size: 12px; color: #ffc107; line-height: 1.5;
         }
+        .divider { border: none; border-top: 1px solid #526f82; margin: 10px 0; }
         #status {
             position: absolute; bottom: 16px; left: 16px; z-index: 10;
             background: rgba(11, 30, 61, .85); color: #8ecae6;
             padding: 8px 14px; border-radius: 4px; font-size: 12px;
+            max-width: 50vw; word-break: break-all;
         }
     </style>
 </head>
 <body>
     <div id="header">
-        <h1>模块一：<span>数据类型与加载</span></h1>
+        <h1>模块一：<span>数据类型与加载</span><span class="badge">CDN Cesium</span></h1>
         <a href="index.html">← 返回讲解文档</a>
     </div>
     <div id="cesiumContainer"></div>
+
     <div id="panel">
-        <h3>图层控制</h3>
-        <label><input type="checkbox" id="chkImagery" checked> 影像底图（Bing Maps）</label>
-        <label><input type="checkbox" id="chkTerrain" checked> 全球地形（Cesium World Terrain）</label>
-        <label><input type="checkbox" id="chkTiles"> 3D Tiles（倾斜摄影示例）</label>
-        <label><input type="checkbox" id="chkInspector"> 开启 Inspector（观察瓦片加载）</label>
+        <h3>🌍 底图影像（单选切换）</h3>
+
+        <label><input type="radio" name="imagery" value="2" checked> Bing Maps Aerial</label>
+        <label><input type="radio" name="imagery" value="3"> Bing Maps Aerial + Labels</label>
+        <label><input type="radio" name="imagery" value="4"> Bing Maps Road</label>
+        <hr class="divider">
+        <label><input type="radio" name="imagery" value="3830182"> Google Satellite</label>
+        <label><input type="radio" name="imagery" value="3830183"> Google Satellite + Labels</label>
+        <label><input type="radio" name="imagery" value="3830184"> Google Roadmap</label>
+        <label><input type="radio" name="imagery" value="3830185"> Google Labels Only</label>
+        <label><input type="radio" name="imagery" value="3830186"> Google Contour</label>
+
+        <h3>⛰ 地形</h3>
+        <label><input type="checkbox" id="chkTerrain" checked> Cesium World Terrain</label>
+        <div class="desc">Asset ID: 1 · Quantized-Mesh 格式</div>
+
+        <h3>🏗 3D Tiles</h3>
+        <label><input type="checkbox" id="chkOSM"> Cesium OSM Buildings</label>
+        <div class="desc">Asset ID: 96188 · 全球建筑白模</div>
+        <label><input type="checkbox" id="chkGoogle3D"> Google Photorealistic 3D Tiles</label>
+        <div class="desc">Asset ID: 2275207 · 全球真实感三维</div>
+
         <div class="warning">
-            ⚠ 倾斜摄影数据必须通过流式加载（3D Tiles），不可一次性全量加载至内存。
+            ⚠ 倾斜摄影 / 3D Tiles 必须流式加载，不可全量读入内存。Google Photorealistic 数据量极大，加载可能较慢。
         </div>
     </div>
+
     <div id="status">就绪</div>
 
     <script>
-        // ====== 令牌配置 ======
-        Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIxZDhlZWQ2MC0wM2Q3LTQ2ZTMtOTE0OC0yMTQ3ZDJhZDI3MzAiLCJpZCI6MzMzNjQ0LCJpYXQiOjE3NTU2NzU3Mzl9.Hm7yypyrQIHLy4Y55rdY_UiYXJMQr7hv-AjLRvoNg3U';
+        Cesium.Ion.defaultAccessToken = 'YOUR_CESIUM_ION_TOKEN';
 
-        const viewer = new Cesium.Viewer('cesiumContainer', {
-            terrainProvider: Cesium.createWorldTerrain(),
-            baseLayerPicker: false,
-            geocoder: false,
-            homeButton: false,
-            sceneModePicker: false,
-            navigationHelpButton: false,
-            animation: false,
-            timeline: false,
-            fullscreenButton: false,
-            selectionIndicator: false,
-            infoBox: false
-        });
+        const statusEl = document.getElementById('status');
+        function setStatus(msg) { statusEl.textContent = msg; }
 
-        const imageryLayer = viewer.imageryLayers.get(0);
-        let tilesetInstance = null;
-        let inspectorLoaded = false;
+        (async function () {
+            const viewer = new Cesium.Viewer('cesiumContainer', {
+                baseLayerPicker: false,
+                geocoder: false,
+                homeButton: false,
+                sceneModePicker: false,
+                navigationHelpButton: false,
+                animation: false,
+                timeline: false,
+                fullscreenButton: false,
+                selectionIndicator: false,
+                infoBox: false
+            });
 
-        function setStatus(msg) {
-            document.getElementById('status').textContent = msg;
-        }
+            // ── 初始地形 ──
+            try {
+                viewer.terrainProvider = await Cesium.CesiumTerrainProvider.fromIonAssetId(1);
+                setStatus('Cesium World Terrain 已加载');
+            } catch (e) {
+                console.error('Terrain load error:', e);
+                setStatus('地形加载失败: ' + e.message);
+            }
 
-        document.getElementById('chkImagery').addEventListener('change', function () {
-            imageryLayer.show = this.checked;
-            setStatus(this.checked ? '影像底图已显示' : '影像底图已隐藏');
-        });
+            // ── 影像切换 ──
+            let currentImageryLayer = viewer.imageryLayers.get(0);
 
-        document.getElementById('chkTerrain').addEventListener('change', function () {
-            viewer.terrainProvider = this.checked
-                ? Cesium.createWorldTerrain()
-                : new Cesium.EllipsoidTerrainProvider();
-            setStatus(this.checked ? '地形已加载' : '地形已移除（使用椭球面）');
-        });
+            async function switchImagery(assetId) {
+                setStatus('正在切换影像 (Asset ' + assetId + ') …');
+                try {
+                    const provider = await Cesium.IonImageryProvider.fromAssetId(assetId);
+                    if (currentImageryLayer) {
+                        viewer.imageryLayers.remove(currentImageryLayer, true);
+                    }
+                    currentImageryLayer = viewer.imageryLayers.addImageryProvider(provider, 0);
+                    setStatus('影像已切换: Asset ' + assetId);
+                } catch (e) {
+                    console.error('Imagery switch error:', e);
+                    setStatus('影像加载失败: ' + e.message);
+                }
+            }
 
-        document.getElementById('chkTiles').addEventListener('change', function () {
-            if (this.checked) {
-                setStatus('正在加载 3D Tiles …');
-                Cesium.Cesium3DTileset.fromIonAssetId(40866).then(function (tileset) {
-                    tilesetInstance = tileset;
-                    viewer.scene.primitives.add(tileset);
-                    viewer.zoomTo(tileset);
-                    setStatus('3D Tiles 加载完成（倾斜摄影）');
-                }).catch(function (err) {
-                    setStatus('3D Tiles 加载失败：' + err.message);
-                    console.error(err);
+            document.querySelectorAll('input[name="imagery"]').forEach(function (radio) {
+                radio.addEventListener('change', function () {
+                    switchImagery(Number(this.value));
                 });
-            } else if (tilesetInstance) {
-                viewer.scene.primitives.remove(tilesetInstance);
-                tilesetInstance = null;
-                setStatus('3D Tiles 已移除');
-            }
-        });
+            });
 
-        document.getElementById('chkInspector').addEventListener('change', function () {
-            if (this.checked && !inspectorLoaded) {
-                viewer.extend(Cesium.viewerCesium3DTilesInspectorMixin);
-                inspectorLoaded = true;
-            }
-            const el = document.querySelector('.cesium-3DTilesInspector');
-            if (el) el.style.display = this.checked ? 'block' : 'none';
-            setStatus(this.checked ? 'Inspector 已开启' : 'Inspector 已关闭');
-        });
+            // ── 地形切换 ──
+            document.getElementById('chkTerrain').addEventListener('change', async function () {
+                if (this.checked) {
+                    try {
+                        viewer.terrainProvider = await Cesium.CesiumTerrainProvider.fromIonAssetId(1);
+                        setStatus('地形已加载');
+                    } catch (e) {
+                        setStatus('地形加载失败: ' + e.message);
+                    }
+                } else {
+                    viewer.terrainProvider = new Cesium.EllipsoidTerrainProvider();
+                    setStatus('地形已移除（使用椭球面）');
+                }
+            });
+
+            // ── 3D Tiles：OSM Buildings ──
+            let osmTileset = null;
+            document.getElementById('chkOSM').addEventListener('change', async function () {
+                if (this.checked) {
+                    setStatus('正在加载 OSM Buildings …');
+                    try {
+                        osmTileset = await Cesium.Cesium3DTileset.fromIonAssetId(96188);
+                        viewer.scene.primitives.add(osmTileset);
+                        viewer.flyTo(osmTileset);
+                        setStatus('OSM Buildings 加载完成');
+                    } catch (e) {
+                        setStatus('OSM Buildings 加载失败: ' + e.message);
+                        this.checked = false;
+                    }
+                } else if (osmTileset) {
+                    viewer.scene.primitives.remove(osmTileset);
+                    osmTileset = null;
+                    setStatus('OSM Buildings 已移除');
+                }
+            });
+
+            // ── 3D Tiles：Google Photorealistic ──
+            let google3dTileset = null;
+            document.getElementById('chkGoogle3D').addEventListener('change', async function () {
+                if (this.checked) {
+                    setStatus('正在加载 Google Photorealistic 3D Tiles（可能较慢）…');
+                    try {
+                        google3dTileset = await Cesium.Cesium3DTileset.fromIonAssetId(2275207);
+                        viewer.scene.primitives.add(google3dTileset);
+                        setStatus('Google Photorealistic 3D Tiles 加载完成');
+                    } catch (e) {
+                        setStatus('Google 3D Tiles 加载失败: ' + e.message);
+                        this.checked = false;
+                    }
+                } else if (google3dTileset) {
+                    viewer.scene.primitives.remove(google3dTileset);
+                    google3dTileset = null;
+                    setStatus('Google 3D Tiles 已移除');
+                }
+            });
+        })();
     </script>
 </body>
 </html>

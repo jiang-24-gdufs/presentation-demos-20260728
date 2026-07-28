@@ -4,8 +4,13 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>模块三：属性查询（拾取）</title>
-    <link href="../Build/Cesium/Widgets/widgets.css" rel="stylesheet">
-    <script src="../Build/Cesium/Cesium.js"></script>
+    <!--
+        ⚠ 本示例使用 CDN 版 Cesium（社区开源版）。
+        如需切换为本地超图 Cesium，请替换下方两行引用，并将
+        Cesium3DTileset.fromIonAssetId() 改为 new Cesium3DTileset({url: Cesium.IonResource.fromAssetId()})。
+    -->
+    <link href="https://cesium.com/downloads/cesiumjs/releases/1.119/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+    <script src="https://cesium.com/downloads/cesiumjs/releases/1.119/Build/Cesium/Cesium.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html, body { width: 100%; height: 100%; overflow: hidden; font-family: 'Segoe UI', system-ui, sans-serif; }
@@ -19,209 +24,379 @@
         }
         #header h1 { color: #fff; font-size: 20px; font-weight: 600; }
         #header h1 span { color: #2ec5ad; }
-        #header a {
-            color: #8ecae6; text-decoration: none; font-size: 14px;
-            padding: 6px 16px; border: 1px solid #8ecae6; border-radius: 4px;
-            transition: all .2s;
-        }
+        #header .badge { background: #2ec5ad; color: #0b1e3d; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 3px; margin-left: 10px; }
+        #header a { color: #8ecae6; text-decoration: none; font-size: 14px; padding: 6px 16px; border: 1px solid #8ecae6; border-radius: 4px; transition: all .2s; }
         #header a:hover { background: #8ecae6; color: #0b1e3d; }
+
         #guide {
-            position: absolute; top: 70px; left: 16px; z-index: 10;
-            background: rgba(11, 30, 61, .92); color: #fff;
+            position: absolute; top: 66px; left: 16px; z-index: 10;
+            background: rgba(11, 30, 61, .94); color: #fff;
             padding: 16px 20px; border-radius: 8px; border: 1px solid #2ec5ad;
-            min-width: 260px; font-size: 13px;
+            width: 310px; font-size: 13px; max-height: calc(100vh - 90px); overflow-y: auto;
         }
-        #guide h3 { color: #2ec5ad; font-size: 15px; margin-bottom: 10px; }
-        #guide ol { padding-left: 18px; line-height: 2; }
-        #guide code { background: rgba(46,197,173,.2); padding: 2px 6px; border-radius: 3px; font-size: 12px; }
+        #guide h3 { color: #2ec5ad; font-size: 14px; margin: 14px 0 8px; }
+        #guide h3:first-child { margin-top: 0; }
+        #guide .step { padding: 4px 0; line-height: 1.6; }
+        #guide .step strong { color: #2ec5ad; }
+        #guide label { display: flex; align-items: center; gap: 8px; padding: 5px 0; cursor: pointer; }
+        #guide input[type="checkbox"] { accent-color: #2ec5ad; width: 15px; height: 15px; }
+        #guide code { background: rgba(46,197,173,.15); padding: 2px 6px; border-radius: 3px; font-size: 12px; color: #2ec5ad; }
+        .divider { border: none; border-top: 1px solid #526f82; margin: 10px 0; }
         .warning {
-            margin-top: 12px; padding: 8px 12px;
-            background: rgba(255, 193, 7, .15); border-left: 3px solid #ffc107;
+            margin-top: 10px; padding: 8px 12px;
+            background: rgba(255, 193, 7, .12); border-left: 3px solid #ffc107;
             border-radius: 4px; font-size: 12px; color: #ffc107; line-height: 1.5;
         }
+
+        /* 地理坐标查询面板 */
+        #geoQuery {
+            position: absolute; bottom: 16px; right: 16px; z-index: 10;
+            background: rgba(11, 30, 61, .94); color: #fff;
+            padding: 16px 20px; border-radius: 8px; border: 1px solid #2ec5ad;
+            width: 300px; font-size: 13px;
+        }
+        #geoQuery h3 { color: #2ec5ad; font-size: 14px; margin-bottom: 10px; }
+        #geoQuery .field { display: flex; gap: 8px; margin-bottom: 8px; }
+        #geoQuery .field label { flex: 0 0 40px; color: #8ba3bf; line-height: 30px; padding: 0; }
+        #geoQuery .field input {
+            flex: 1; padding: 6px 8px; background: rgba(255,255,255,.08);
+            border: 1px solid #526f82; color: #fff; border-radius: 4px; font-size: 13px;
+        }
+        #geoQuery button {
+            width: 100%; padding: 8px; background: #2ec5ad; color: #fff;
+            border: none; border-radius: 4px; cursor: pointer; font-size: 13px; margin-top: 4px;
+        }
+        #geoQuery button:hover { background: #26a08d; }
+
+        /* 弹窗 */
         #popup {
             display: none; position: absolute; z-index: 20;
-            background: rgba(11, 30, 61, .95); color: #fff;
+            background: rgba(11, 30, 61, .96); color: #fff;
             padding: 16px 20px; border-radius: 8px; border: 1px solid #2ec5ad;
-            min-width: 280px; font-size: 13px; pointer-events: auto;
+            min-width: 300px; max-width: 420px; font-size: 13px;
             box-shadow: 0 8px 32px rgba(0,0,0,.5);
         }
         #popup h4 { color: #2ec5ad; margin-bottom: 10px; font-size: 15px; }
+        #popup .tag { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 3px; margin-bottom: 8px; }
+        #popup .tag-entity { background: rgba(46,197,173,.2); color: #2ec5ad; }
+        #popup .tag-tile { background: rgba(59,130,246,.2); color: #93c5fd; }
+        #popup .tag-model { background: rgba(168,85,247,.2); color: #c4b5fd; }
+        #popup .tag-geo { background: rgba(255,193,7,.2); color: #fde68a; }
         #popup table { width: 100%; border-collapse: collapse; }
-        #popup td { padding: 4px 8px; border-bottom: 1px solid rgba(255,255,255,.1); }
-        #popup td:first-child { color: #8ecae6; white-space: nowrap; }
-        #popup .close-btn {
-            position: absolute; top: 8px; right: 12px;
-            background: none; border: none; color: #e74c3c; font-size: 18px; cursor: pointer;
-        }
+        #popup td { padding: 4px 8px; border-bottom: 1px solid rgba(255,255,255,.08); }
+        #popup td:first-child { color: #8ecae6; white-space: nowrap; width: 90px; }
+        #popup .close-btn { position: absolute; top: 8px; right: 12px; background: none; border: none; color: #e74c3c; font-size: 18px; cursor: pointer; }
+
         #status {
             position: absolute; bottom: 16px; left: 16px; z-index: 10;
             background: rgba(11, 30, 61, .85); color: #8ecae6;
             padding: 8px 14px; border-radius: 4px; font-size: 12px;
+            max-width: 45vw;
         }
     </style>
 </head>
 <body>
     <div id="header">
-        <h1>模块三：<span>属性查询（拾取）</span></h1>
+        <h1>模块三：<span>属性查询（拾取）</span><span class="badge">CDN Cesium</span></h1>
         <a href="index.html">← 返回讲解文档</a>
     </div>
     <div id="cesiumContainer"></div>
+
     <div id="guide">
-        <h3>操作指引</h3>
-        <ol>
-            <li>左键点击 <strong>Entity 点标记</strong> → 弹出业务属性</li>
-            <li>勾选加载 3D Tiles 后，左键点击 <strong>建筑要素</strong> → 弹出瓦片属性</li>
-            <li>点击空白区域 → 显示地理坐标</li>
-        </ol>
-        <label style="display:flex;align-items:center;gap:8px;margin-top:12px;cursor:pointer;">
-            <input type="checkbox" id="chkTiles" style="accent-color:#2ec5ad;width:16px;height:16px;">
-            加载 3D Tiles（倾斜摄影）
-        </label>
+        <h3>场景对象</h3>
+        <div class="step">🔵 <strong>Entity 点标记</strong>（5 个城市地标）</div>
+        <div class="step">🟣 <strong>3D 模型</strong>（glTF 模型实体 · 天安门上方）</div>
+        <label><input type="checkbox" id="chkOSM"> 加载 OSM Buildings（3D Tiles）</label>
+
+        <hr class="divider">
+        <h3>拾取操作</h3>
+        <div class="step">左键点击 <strong>Entity</strong> → 业务属性弹窗</div>
+        <div class="step">左键点击 <strong>3D 模型</strong> → 模型信息弹窗</div>
+        <div class="step">左键点击 <strong>3D Tiles 建筑</strong> → 要素属性弹窗</div>
+        <div class="step">左键点击 <strong>空白区域</strong> → 地理坐标信息</div>
+
         <div class="warning">
             ⚠ 大数据场景：拾取只取 ID，详情走后端接口查询，避免前端内存暴涨。
         </div>
     </div>
+
+    <!-- 地理坐标查询面板 -->
+    <div id="geoQuery">
+        <h3>地理坐标查询 3D Tiles</h3>
+        <div class="field"><label>经度</label><input type="number" id="qLng" value="116.3975" step="0.001"></div>
+        <div class="field"><label>纬度</label><input type="number" id="qLat" value="39.9087" step="0.001"></div>
+        <button onclick="geoQueryTiles()">飞行至坐标并查询要素</button>
+        <div style="margin-top:8px;font-size:11px;color:#8ba3bf;">
+            输入经纬度 → 飞行到目标位置 → 自动拾取正下方 3D Tiles 要素属性。需先勾选加载 OSM Buildings。
+        </div>
+    </div>
+
     <div id="popup">
         <button class="close-btn" onclick="closePopup()">×</button>
         <h4 id="popupTitle">属性详情</h4>
+        <div id="popupTag"></div>
         <table><tbody id="popupBody"></tbody></table>
     </div>
     <div id="status">点击场景中的对象进行拾取</div>
 
     <script>
-        Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIxZDhlZWQ2MC0wM2Q3LTQ2ZTMtOTE0OC0yMTQ3ZDJhZDI3MzAiLCJpZCI6MzMzNjQ0LCJpYXQiOjE3NTU2NzU3Mzl9.Hm7yypyrQIHLy4Y55rdY_UiYXJMQr7hv-AjLRvoNg3U';
+        Cesium.Ion.defaultAccessToken = 'YOUR_CESIUM_ION_TOKEN';
 
-        const viewer = new Cesium.Viewer('cesiumContainer', {
-            terrainProvider: Cesium.createWorldTerrain(),
-            baseLayerPicker: false, geocoder: false, homeButton: false,
-            sceneModePicker: false, navigationHelpButton: false,
-            animation: false, timeline: false, fullscreenButton: false,
-            selectionIndicator: true, infoBox: false
-        });
-
-        const sampleEntities = [
-            { id: 'poi-01', name: '天安门', lng: 116.3975, lat: 39.9087, status: '正常', category: '文化地标' },
-            { id: 'poi-02', name: '东方明珠', lng: 121.4997, lat: 31.2397, status: '告警', category: '通信设施' },
-            { id: 'poi-03', name: '广州塔', lng: 113.3245, lat: 23.1066, status: '正常', category: '观光设施' },
-            { id: 'poi-04', name: '西湖', lng: 120.1485, lat: 30.2427, status: '离线', category: '自然景观' },
-            { id: 'poi-05', name: '故宫', lng: 116.3972, lat: 39.9163, status: '正常', category: '文化地标' }
-        ];
-
-        const statusColors = {
-            '正常': Cesium.Color.fromCssColorString('#2ec5ad'),
-            '告警': Cesium.Color.fromCssColorString('#ffc107'),
-            '离线': Cesium.Color.fromCssColorString('#e74c3c')
-        };
-
-        sampleEntities.forEach(function (d) {
-            viewer.entities.add({
-                id: d.id,
-                name: d.name,
-                position: Cesium.Cartesian3.fromDegrees(d.lng, d.lat, 0),
-                point: {
-                    pixelSize: 14,
-                    color: statusColors[d.status],
-                    outlineColor: Cesium.Color.WHITE, outlineWidth: 2,
-                    heightReference: Cesium.HeightReference.CLAMP_TO_GROUND
-                },
-                label: {
-                    text: d.name,
-                    font: '14px sans-serif',
-                    fillColor: Cesium.Color.WHITE,
-                    outlineColor: Cesium.Color.BLACK, outlineWidth: 2,
-                    style: Cesium.LabelStyle.FILL_AND_OUTLINE,
-                    verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
-                    pixelOffset: new Cesium.Cartesian2(0, -20),
-                    heightReference: Cesium.HeightReference.CLAMP_TO_GROUND
-                },
-                properties: { bizId: d.id, status: d.status, category: d.category }
-            });
-        });
-        viewer.zoomTo(viewer.entities);
-
-        let tilesetInstance = null;
-        document.getElementById('chkTiles').addEventListener('change', function () {
-            if (this.checked) {
-                Cesium.Cesium3DTileset.fromIonAssetId(40866).then(function (tileset) {
-                    tilesetInstance = tileset;
-                    viewer.scene.primitives.add(tileset);
-                    viewer.zoomTo(tileset);
-                });
-            } else if (tilesetInstance) {
-                viewer.scene.primitives.remove(tilesetInstance);
-                tilesetInstance = null;
-            }
-        });
-
-        const popup = document.getElementById('popup');
-        const popupTitle = document.getElementById('popupTitle');
-        const popupBody = document.getElementById('popupBody');
         const statusEl = document.getElementById('status');
+        function setStatus(msg) { statusEl.textContent = msg; }
 
-        function showPopup(screenPos, title, rows) {
-            popupTitle.textContent = title;
-            popupBody.innerHTML = rows.map(function (r) {
-                return '<tr><td>' + r[0] + '</td><td>' + r[1] + '</td></tr>';
-            }).join('');
-            popup.style.left = (screenPos.x + 16) + 'px';
-            popup.style.top = (screenPos.y + 16) + 'px';
-            popup.style.display = 'block';
-        }
+        (async function () {
+            const viewer = new Cesium.Viewer('cesiumContainer', {
+                baseLayerPicker: false, geocoder: false, homeButton: false,
+                sceneModePicker: false, navigationHelpButton: false,
+                animation: false, timeline: false, fullscreenButton: false,
+                selectionIndicator: true, infoBox: false
+            });
 
-        function closePopup() { popup.style.display = 'none'; }
+            try {
+                viewer.terrainProvider = await Cesium.CesiumTerrainProvider.fromIonAssetId(1);
+            } catch (e) { console.warn('Terrain fallback:', e); }
 
-        const handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
+            // ── 1. Entity 点标记 ──
+            const poiData = [
+                { id: 'poi-01', name: '天安门',   lng: 116.3975, lat: 39.9087, status: '正常', category: '文化地标' },
+                { id: 'poi-02', name: '东方明珠', lng: 121.4997, lat: 31.2397, status: '告警', category: '通信设施' },
+                { id: 'poi-03', name: '广州塔',   lng: 113.3245, lat: 23.1066, status: '正常', category: '观光设施' },
+                { id: 'poi-04', name: '西湖',     lng: 120.1485, lat: 30.2427, status: '离线', category: '自然景观' },
+                { id: 'poi-05', name: '故宫',     lng: 116.3972, lat: 39.9163, status: '正常', category: '文化地标' }
+            ];
+            const statusColors = {
+                '正常': Cesium.Color.fromCssColorString('#2ec5ad'),
+                '告警': Cesium.Color.fromCssColorString('#ffc107'),
+                '离线': Cesium.Color.fromCssColorString('#e74c3c')
+            };
+            poiData.forEach(function (d) {
+                viewer.entities.add({
+                    id: d.id, name: d.name,
+                    position: Cesium.Cartesian3.fromDegrees(d.lng, d.lat, 0),
+                    point: {
+                        pixelSize: 14, color: statusColors[d.status],
+                        outlineColor: Cesium.Color.WHITE, outlineWidth: 2,
+                        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND
+                    },
+                    label: {
+                        text: d.name, font: '14px sans-serif',
+                        fillColor: Cesium.Color.WHITE,
+                        outlineColor: Cesium.Color.BLACK, outlineWidth: 2,
+                        style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+                        verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+                        pixelOffset: new Cesium.Cartesian2(0, -20),
+                        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND
+                    },
+                    properties: { bizId: d.id, status: d.status, category: d.category }
+                });
+            });
 
-        handler.setInputAction(function (click) {
-            closePopup();
-            const picked = viewer.scene.pick(click.position);
+            // ── 2. 3D 模型加载（Entity + model）──
+            const modelEntity = viewer.entities.add({
+                id: 'model-airplane',
+                name: '示例飞行器模型',
+                position: Cesium.Cartesian3.fromDegrees(116.3975, 39.9087, 500),
+                model: {
+                    uri: '../Build/Cesium/Apps/SampleData/models/CesiumAir/Cesium_Air.glb',
+                    minimumPixelSize: 64,
+                    maximumScale: 5000
+                },
+                properties: {
+                    modelType: '飞行器',
+                    manufacturer: 'Cesium 示例模型',
+                    assetSource: '本地 glTF',
+                    loadMethod: 'Entity.model',
+                    note: '演示模型加载后拾取查询'
+                }
+            });
 
-            if (Cesium.defined(picked)) {
-                if (picked.id && picked.id instanceof Cesium.Entity) {
-                    const entity = picked.id;
-                    const props = entity.properties;
-                    statusEl.textContent = '拾取到 Entity: ' + entity.id;
-                    console.log('[Entity Pick]', entity);
-                    showPopup(click.position, 'Entity 属性', [
-                        ['ID', entity.id],
-                        ['名称', entity.name || 'N/A'],
-                        ['业务ID', props && props.bizId ? props.bizId.getValue() : 'N/A'],
-                        ['状态', props && props.status ? props.status.getValue() : 'N/A'],
-                        ['类别', props && props.category ? props.category.getValue() : 'N/A']
+            viewer.zoomTo(viewer.entities);
+
+            // ── 3. 3D Tiles (OSM Buildings) ──
+            let osmTileset = null;
+            document.getElementById('chkOSM').addEventListener('change', async function () {
+                if (this.checked) {
+                    setStatus('正在加载 OSM Buildings …');
+                    try {
+                        osmTileset = await Cesium.Cesium3DTileset.fromIonAssetId(96188);
+                        viewer.scene.primitives.add(osmTileset);
+                        setStatus('OSM Buildings 已加载 — 点击建筑查看属性');
+                    } catch (e) {
+                        setStatus('OSM Buildings 加载失败: ' + e.message);
+                        this.checked = false;
+                    }
+                } else if (osmTileset) {
+                    viewer.scene.primitives.remove(osmTileset);
+                    osmTileset = null;
+                    setStatus('OSM Buildings 已移除');
+                }
+            });
+
+            // ── 弹窗 ──
+            const popup = document.getElementById('popup');
+            const popupTitle = document.getElementById('popupTitle');
+            const popupTag = document.getElementById('popupTag');
+            const popupBody = document.getElementById('popupBody');
+
+            function showPopup(screenPos, title, tagClass, tagText, rows) {
+                popupTitle.textContent = title;
+                popupTag.innerHTML = '<span class="tag ' + tagClass + '">' + tagText + '</span>';
+                popupBody.innerHTML = rows.map(function (r) {
+                    return '<tr><td>' + r[0] + '</td><td>' + r[1] + '</td></tr>';
+                }).join('');
+                let left = screenPos.x + 16;
+                let top = screenPos.y + 16;
+                if (left + 340 > window.innerWidth) left = screenPos.x - 340;
+                if (top + 300 > window.innerHeight) top = screenPos.y - 300;
+                popup.style.left = Math.max(0, left) + 'px';
+                popup.style.top = Math.max(60, top) + 'px';
+                popup.style.display = 'block';
+            }
+            window.closePopup = function () { popup.style.display = 'none'; };
+
+            // ── 拾取逻辑 ──
+            const handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
+
+            handler.setInputAction(function (click) {
+                closePopup();
+                const picked = viewer.scene.pick(click.position);
+
+                if (Cesium.defined(picked)) {
+                    // 分支 A：Entity 拾取
+                    if (picked.id && picked.id instanceof Cesium.Entity) {
+                        const entity = picked.id;
+                        const props = entity.properties;
+                        console.log('[Entity Pick]', entity);
+
+                        // 区分模型 Entity 和普通 Entity
+                        if (entity.model) {
+                            setStatus('拾取到模型 Entity: ' + entity.id);
+                            const rows = [
+                                ['ID', entity.id],
+                                ['名称', entity.name || 'N/A'],
+                                ['加载方式', props && props.loadMethod ? props.loadMethod.getValue() : 'N/A'],
+                                ['模型类型', props && props.modelType ? props.modelType.getValue() : 'N/A'],
+                                ['制造商', props && props.manufacturer ? props.manufacturer.getValue() : 'N/A'],
+                                ['数据来源', props && props.assetSource ? props.assetSource.getValue() : 'N/A'],
+                                ['备注', props && props.note ? props.note.getValue() : 'N/A']
+                            ];
+                            showPopup(click.position, '模型属性查询', 'tag-model', 'MODEL', rows);
+                        } else {
+                            setStatus('拾取到 Entity: ' + entity.id);
+                            const rows = [
+                                ['ID', entity.id],
+                                ['名称', entity.name || 'N/A'],
+                                ['业务ID', props && props.bizId ? props.bizId.getValue() : 'N/A'],
+                                ['状态', props && props.status ? props.status.getValue() : 'N/A'],
+                                ['类别', props && props.category ? props.category.getValue() : 'N/A']
+                            ];
+                            showPopup(click.position, 'Entity 业务属性', 'tag-entity', 'ENTITY', rows);
+                        }
+                        return;
+                    }
+
+                    // 分支 B：3D Tiles Feature 拾取
+                    if (picked instanceof Cesium.Cesium3DTileFeature) {
+                        const feature = picked;
+                        const propertyIds = feature.getPropertyIds();
+                        setStatus('拾取到 3D Tiles Feature（' + propertyIds.length + ' 个属性）');
+                        console.log('[Tile Feature Pick]', feature, propertyIds);
+
+                        // 同时获取拾取点的地理坐标
+                        const cartesian = viewer.scene.pickPosition(click.position);
+                        let geoRows = [];
+                        if (Cesium.defined(cartesian)) {
+                            const carto = Cesium.Cartographic.fromCartesian(cartesian);
+                            geoRows = [
+                                ['拾取经度', Cesium.Math.toDegrees(carto.longitude).toFixed(6) + '°'],
+                                ['拾取纬度', Cesium.Math.toDegrees(carto.latitude).toFixed(6) + '°'],
+                                ['拾取高程', carto.height.toFixed(2) + ' m']
+                            ];
+                        }
+                        const attrRows = propertyIds.slice(0, 12).map(function (pid) {
+                            return [pid, String(feature.getProperty(pid))];
+                        });
+                        showPopup(click.position, '3D Tiles 要素属性', 'tag-tile', 'TILE FEATURE',
+                            geoRows.concat([['────', '── 要素属性 ──']]).concat(attrRows));
+                        return;
+                    }
+                }
+
+                // 分支 C：空白区域 → 地理坐标
+                const cartesian = viewer.scene.pickPosition(click.position);
+                if (Cesium.defined(cartesian)) {
+                    const carto = Cesium.Cartographic.fromCartesian(cartesian);
+                    const lng = Cesium.Math.toDegrees(carto.longitude).toFixed(6);
+                    const lat = Cesium.Math.toDegrees(carto.latitude).toFixed(6);
+                    const alt = carto.height.toFixed(2);
+                    setStatus('空白区域 — 经度:' + lng + ' 纬度:' + lat + ' 高度:' + alt + 'm');
+                    showPopup(click.position, '地理坐标信息', 'tag-geo', 'GEO POSITION', [
+                        ['经度 (lng)', lng + '°'],
+                        ['纬度 (lat)', lat + '°'],
+                        ['高程 (alt)', alt + ' m'],
+                        ['Cartesian3.x', cartesian.x.toFixed(2)],
+                        ['Cartesian3.y', cartesian.y.toFixed(2)],
+                        ['Cartesian3.z', cartesian.z.toFixed(2)]
                     ]);
+                } else {
+                    setStatus('未拾取到任何对象');
+                }
+            }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+
+            // ── 地理坐标查询 3D Tiles ──
+            window.geoQueryTiles = async function () {
+                const lng = parseFloat(document.getElementById('qLng').value);
+                const lat = parseFloat(document.getElementById('qLat').value);
+                if (isNaN(lng) || isNaN(lat)) {
+                    setStatus('请输入有效的经纬度');
+                    return;
+                }
+                if (!osmTileset) {
+                    setStatus('请先勾选加载 OSM Buildings');
                     return;
                 }
 
-                if (picked instanceof Cesium.Cesium3DTileFeature) {
-                    const feature = picked;
-                    const propertyIds = feature.getPropertyIds();
-                    statusEl.textContent = '拾取到 3D Tiles Feature（' + propertyIds.length + ' 个属性）';
-                    console.log('[Tile Feature Pick]', feature);
-                    const rows = propertyIds.slice(0, 15).map(function (pid) {
-                        return [pid, String(feature.getProperty(pid))];
-                    });
-                    showPopup(click.position, '3D Tiles 要素属性', rows);
-                    return;
-                }
-            }
+                setStatus('正在飞行至 (' + lng.toFixed(4) + ', ' + lat.toFixed(4) + ') …');
 
-            const cartesian = viewer.scene.pickPosition(click.position);
-            if (Cesium.defined(cartesian)) {
-                const carto = Cesium.Cartographic.fromCartesian(cartesian);
-                const lng = Cesium.Math.toDegrees(carto.longitude).toFixed(6);
-                const lat = Cesium.Math.toDegrees(carto.latitude).toFixed(6);
-                const alt = carto.height.toFixed(2);
-                statusEl.textContent = '空白区域 — 经度:' + lng + ' 纬度:' + lat + ' 高度:' + alt + 'm';
-                showPopup(click.position, '地理坐标', [
-                    ['经度', lng + '°'],
-                    ['纬度', lat + '°'],
-                    ['高程', alt + ' m']
-                ]);
-            } else {
-                statusEl.textContent = '未拾取到任何对象';
-            }
-        }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+                await viewer.camera.flyTo({
+                    destination: Cesium.Cartesian3.fromDegrees(lng, lat, 800),
+                    orientation: {
+                        heading: 0,
+                        pitch: Cesium.Math.toRadians(-45),
+                        roll: 0
+                    },
+                    duration: 2
+                });
+
+                // 飞行完成后，在屏幕中心执行拾取
+                setTimeout(function () {
+                    const center = new Cesium.Cartesian2(
+                        viewer.canvas.clientWidth / 2,
+                        viewer.canvas.clientHeight / 2
+                    );
+                    const picked = viewer.scene.pick(center);
+
+                    if (picked instanceof Cesium.Cesium3DTileFeature) {
+                        const feature = picked;
+                        const propertyIds = feature.getPropertyIds();
+                        const rows = [
+                            ['查询经度', lng.toFixed(6) + '°'],
+                            ['查询纬度', lat.toFixed(6) + '°'],
+                            ['────', '── 要素属性 ──']
+                        ];
+                        propertyIds.slice(0, 12).forEach(function (pid) {
+                            rows.push([pid, String(feature.getProperty(pid))]);
+                        });
+                        const screenCenter = { x: window.innerWidth / 2 - 150, y: 80 };
+                        showPopup(screenCenter, '地理坐标查询结果', 'tag-geo', 'GEO → TILE QUERY', rows);
+                        setStatus('查询完成：在 (' + lng.toFixed(4) + ', ' + lat.toFixed(4) + ') 找到 3D Tiles 要素');
+                    } else {
+                        setStatus('在 (' + lng.toFixed(4) + ', ' + lat.toFixed(4) + ') 未找到 3D Tiles 要素，请调整坐标或降低飞行高度');
+                    }
+                }, 500);
+            };
+        })();
     </script>
 </body>
 </html>

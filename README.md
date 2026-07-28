@@ -2,66 +2,87 @@
 
 ## 文件清单
 
-| 文件 | 说明 |
-|------|------|
-| `index.html` | 核心讲解文档（单页幻灯片，滚动/点击切换章节） |
-| `demo-01-loading.html` | 模块一：数据类型与加载（影像 + 地形 + 3D Tiles） |
-| `demo-02-entity.html` | 模块二：Entity API（增删改查 + 属性绑定） |
-| `demo-03-pick.html` | 模块三：属性查询（Entity / 3D Tiles 拾取） |
-| `demo-04-debug.html` | 模块四：调试与体检（Inspector + 自查表） |
-| `demo-05-performance.html` | 模块五：性能优化（SSE 调参 + 帧率监控） |
+| 文件 | Cesium 版本 | 说明 |
+|------|------------|------|
+| `index.html` | — | 核心讲解文档（单页幻灯片，滚动/点击切换章节） |
+| `demo-01-loading.html` | CDN 社区版 | 模块一：数据类型与加载（Bing / Google 影像 + 地形 + 3D Tiles） |
+| `demo-02-entity.html` | 本地超图版 | 模块二：Entity API（增删改查 + 属性绑定） |
+| `demo-03-pick.html` | CDN 社区版 | 模块三：属性查询（Entity / 模型 / 3D Tiles 拾取 + 地理坐标查询） |
+| `demo-04-debug.html` | 本地超图版 | 模块四：调试与体检（Inspector + 自查表） |
+| `demo-05-coordinates.html` | CDN 社区版 | 模块五：坐标系统与空间计算（WGS84 ⇄ Cartesian3 + 实时坐标跟踪） |
+
+## ⚠ CDN 版与超图版的区别
+
+| | CDN 社区版 (≥ 1.104) | 本地超图 Cesium |
+|---|---|---|
+| **3D Tiles 加载** | `Cesium3DTileset.fromIonAssetId()` | `new Cesium3DTileset({url})` |
+| **影像加载** | `IonImageryProvider.fromAssetId()` | `new IonImageryProvider({assetId})` |
+| **地形加载** | `CesiumTerrainProvider.fromIonAssetId()` | `createWorldTerrain()` |
+| **S3M 数据** | 不支持 | `scene.addS3MTilesLayerByScp()` |
+
+超图版本基于较早的 Cesium 内核，**不支持** `fromIonAssetId` / `fromAssetId` 等静态工厂方法。混用会报 `TypeError: ... is not a function`。
 
 ## 运行方式
 
-### 方式一：本地 Build 目录（推荐，适用于超图 Cesium）
+### 方式一：本地 HTTP 服务器（推荐）
 
-所有示例默认引用项目根目录下的 `../Build/Cesium/` 路径，因此需要通过本地 HTTP 服务器运行。
+所有示例均需通过 HTTP 服务器访问，直接双击打开（file:// 协议）会导致跨域错误。
 
 ```bash
-# 在项目根目录启动任意静态服务器
-# 方式 A：Node.js
+# 在项目根目录启动
 npx serve .
-
-# 方式 B：Python
+# 或
 python -m http.server 8080
-
-# 方式 C：VS Code Live Server 插件
-# 右键 index.html → Open with Live Server
+# 或使用 VS Code Live Server 插件
 ```
 
 然后访问 `http://localhost:<port>/presentation-demos-20260728/index.html`。
 
-### 方式二：CDN 加载标准 Cesium
+### 方式二：切换 Cesium 引用
 
-如需使用标准 Cesium（非超图版本），将每个 HTML 文件头部的引用替换为：
+使用 CDN 的示例（demo-01 / demo-03 / demo-05）引用的是：
 
 ```html
-<!-- 替换前（本地 Build） -->
-<link href="../Build/Cesium/Widgets/widgets.css" rel="stylesheet">
-<script src="../Build/Cesium/Cesium.js"></script>
-
-<!-- 替换后（CDN） -->
 <link href="https://cesium.com/downloads/cesiumjs/releases/1.119/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
 <script src="https://cesium.com/downloads/cesiumjs/releases/1.119/Build/Cesium/Cesium.js"></script>
 ```
 
+使用本地超图版本的示例（demo-02 / demo-04）引用的是：
+
+```html
+<link href="../Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+<script src="../Build/Cesium/Cesium.js"></script>
+```
+
+如需切换版本，修改对应 HTML 文件头部的引用即可。注意 API 差异。
+
 ## Cesium Ion 令牌配置
 
-所有示例中使用了 `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIxZDhlZWQ2MC0wM2Q3LTQ2ZTMtOTE0OC0yMTQ3ZDJhZDI3MzAiLCJpZCI6MzMzNjQ0LCJpYXQiOjE3NTU2NzU3Mzl9.Hm7yypyrQIHLy4Y55rdY_UiYXJMQr7hv-AjLRvoNg3U` 作为令牌占位符。运行前需替换为你自己的令牌：
+所有示例中使用 `YOUR_CESIUM_ION_TOKEN` 作为令牌占位符。运行前需替换为你自己的令牌：
 
 1. 前往 [Cesium Ion](https://ion.cesium.com/tokens) 获取或创建令牌
-2. 全局替换所有文件中的 `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIxZDhlZWQ2MC0wM2Q3LTQ2ZTMtOTE0OC0yMTQ3ZDJhZDI3MzAiLCJpZCI6MzMzNjQ0LCJpYXQiOjE3NTU2NzU3Mzl9.Hm7yypyrQIHLy4Y55rdY_UiYXJMQr7hv-AjLRvoNg3U` 为你的实际令牌
+2. 全局替换所有文件中的 `YOUR_CESIUM_ION_TOKEN`
 
-```bash
+```powershell
 # 批量替换（PowerShell）
 Get-ChildItem *.html | ForEach-Object {
-    (Get-Content $_.FullName) -replace 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIxZDhlZWQ2MC0wM2Q3LTQ2ZTMtOTE0OC0yMTQ3ZDJhZDI3MzAiLCJpZCI6MzMzNjQ0LCJpYXQiOjE3NTU2NzU3Mzl9.Hm7yypyrQIHLy4Y55rdY_UiYXJMQr7hv-AjLRvoNg3U', '你的实际令牌' |
+    (Get-Content $_.FullName) -replace 'YOUR_CESIUM_ION_TOKEN', '你的实际令牌' |
     Set-Content $_.FullName
 }
 ```
 
-## 注意事项
+## 可用的 Ion Asset ID
 
-- 所有 HTML 文件必须通过 HTTP 服务器访问，直接双击打开（file:// 协议）会导致跨域错误
-- 3D Tiles 示例使用 Cesium Ion Asset ID 40866（纽约建筑），需要有效的 Ion 令牌
-- 讲解文档 `index.html` 为纯展示页面，不包含可执行的 Cesium 代码
+| Asset ID | 名称 | 类型 |
+|----------|------|------|
+| 1 | Cesium World Terrain | Terrain |
+| 2 | Bing Maps Aerial | Imagery |
+| 3 | Bing Maps Aerial with Labels | Imagery |
+| 4 | Bing Maps Road | Imagery |
+| 96188 | Cesium OSM Buildings | 3D Tiles |
+| 2275207 | Google Photorealistic 3D Tiles | 3D Tiles |
+| 3830182 | Google Maps 2D Satellite | Imagery |
+| 3830183 | Google Maps 2D Satellite with Labels | Imagery |
+| 3830184 | Google Maps 2D Roadmap | Imagery |
+| 3830185 | Google Maps 2D Labels Only | Imagery |
+| 3830186 | Google Maps 2D Contour | Imagery |

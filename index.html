@@ -169,7 +169,7 @@
     <a href="#mod2">Entity API</a>
     <a href="#mod3">属性查询</a>
     <a href="#mod4">调试体检</a>
-    <a href="#mod5">性能优化</a>
+    <a href="#mod5">坐标系统</a>
     <a href="#summary">总结</a>
     <a href="#qa">Q&amp;A</a>
 </nav>
@@ -190,38 +190,49 @@
 
     <table>
         <thead>
-            <tr><th>数据类型</th><th>常见格式</th><th>加载方式 / API</th><th>适用场景</th></tr>
+            <tr><th>数据类型</th><th>常见格式</th><th>CDN Cesium（社区版）API</th><th>超图 Cesium API</th><th>适用场景</th></tr>
         </thead>
         <tbody>
             <tr>
                 <td><strong>影像</strong></td>
-                <td>WMS / WMTS / TMS / Bing / ArcGIS</td>
-                <td><code>ImageryProvider</code></td>
+                <td>WMS / WMTS / TMS / Bing / Google</td>
+                <td><code>IonImageryProvider.fromAssetId()</code></td>
+                <td><code>new IonImageryProvider({assetId})</code></td>
                 <td>底图、卫星图、行政区划</td>
             </tr>
             <tr>
                 <td><strong>地形</strong></td>
                 <td>Quantized-Mesh / Heightmap / STK</td>
-                <td><code>TerrainProvider</code></td>
+                <td><code>CesiumTerrainProvider.fromIonAssetId()</code></td>
+                <td><code>createWorldTerrain()</code></td>
                 <td>地形起伏、水面高程</td>
             </tr>
             <tr>
                 <td><strong>矢量</strong></td>
                 <td>GeoJSON / KML / CZML</td>
-                <td><code>GeoJsonDataSource</code> / <code>KmlDataSource</code></td>
+                <td colspan="2" style="text-align:center;"><code>GeoJsonDataSource</code> / <code>KmlDataSource</code>（两版通用）</td>
                 <td>边界、路径、标注</td>
             </tr>
             <tr>
                 <td><strong>3D Tiles</strong></td>
                 <td>b3dm / i3dm / pnts / glTF</td>
-                <td><code>Cesium3DTileset</code></td>
+                <td><code>Cesium3DTileset.fromIonAssetId()</code></td>
+                <td><code>new Cesium3DTileset({url})</code></td>
                 <td>倾斜摄影、BIM、点云</td>
             </tr>
             <tr>
                 <td><strong>模型</strong></td>
-                <td>glTF / glb / S3M（超图）</td>
-                <td><code>Model.fromGltf</code> / <code>S3MTilesLayer</code></td>
+                <td>glTF / glb</td>
+                <td><code>Model.fromGltfAsync()</code></td>
+                <td><code>Model.fromGltf()</code></td>
                 <td>单体建筑、设备、车辆</td>
+            </tr>
+            <tr>
+                <td><strong>S3M</strong></td>
+                <td>S3M / S3MB（超图专有）</td>
+                <td style="color:var(--text-dim);">— 不支持 —</td>
+                <td><code>scene.addS3MTilesLayerByScp()</code></td>
+                <td>超图 iServer 三维服务</td>
             </tr>
         </tbody>
     </table>
@@ -231,9 +242,14 @@
         <div><strong>关键警示：</strong>倾斜摄影数据必须通过 3D Tiles 流式加载，不可一次性全量读入内存。典型倾斜数据量可达数十 GB，违反此原则将导致浏览器崩溃。</div>
     </div>
 
+    <div class="alert alert-warn">
+        <span class="alert-icon">⚠</span>
+        <div><strong>版本差异：</strong>超图 Cesium 基于较早的 Cesium 内核，<strong>不支持</strong> <code>fromIonAssetId()</code> / <code>fromAssetId()</code> 等静态工厂方法（1.104+ 新增）。使用超图版本时必须改用旧版构造函数 API，否则会报 <code>TypeError: ... is not a function</code>。</div>
+    </div>
+
     <div class="alert alert-info">
         <span class="alert-icon">💡</span>
-        <div>超图 Cesium 额外支持 S3M（SuperMap 3D Model）格式，通过 <code>S3MTilesLayer</code> 加载 iServer 发布的三维服务。</div>
+        <div>超图 Cesium 额外支持 S3M / S3MB 格式，通过 <code>S3MTilesLayer</code> 加载 iServer 发布的三维服务。这是超图版本独有的能力，CDN 社区版不支持。</div>
     </div>
 
     <a class="demo-btn" href="demo-01-loading.html" target="_blank">打开示例 → demo-01-loading.html</a>
@@ -320,10 +336,22 @@
             <p>场景：点标注、自定义图标、路径对象</p>
         </div>
         <div class="card">
+            <h4>模型加载后查询</h4>
+            <p>加载方式：<code>Entity + model</code> 或 <code>Model.fromGltf</code></p>
+            <p>拾取后同样返回 Entity，通过 <code>entity.model</code> 判断是否为模型</p>
+            <p>场景：加载 glTF/glb 模型后查询其挂载的业务属性</p>
+        </div>
+        <div class="card">
             <h4>3D Tiles 要素拾取</h4>
             <p>判断条件：<code>picked instanceof Cesium3DTileFeature</code></p>
             <p>读取属性：<code>feature.getProperty(name)</code></p>
             <p>场景：倾斜摄影建筑、BIM 构件、管线</p>
+        </div>
+        <div class="card">
+            <h4>地理坐标查询倾斜影像</h4>
+            <p>输入经纬度 → 飞行定位 → 屏幕中心拾取 3D Tiles</p>
+            <p>适用于：已知坐标反查倾斜摄影要素属性</p>
+            <p>场景：根据 GPS 坐标定位建筑、管线等实体</p>
         </div>
         <div class="card">
             <h4>空白区域</h4>
@@ -383,56 +411,78 @@
 <!-- ════════════════════ 模块五 ════════════════════ -->
 <section id="mod5">
     <div class="section-tag">Module 05</div>
-    <h2>性能<span>优化</span></h2>
+    <h2>坐标系统与<span>空间计算</span></h2>
 
-    <h3>三步诊断法</h3>
-    <div class="flow">
-        <div class="flow-step">Step 1<br>观察 FPS<br><code>&lt; 30 = 卡</code></div>
-        <span class="flow-arrow">→</span>
-        <div class="flow-step">Step 2<br>定位瓶颈<br>GPU? CPU? 网络?</div>
-        <span class="flow-arrow">→</span>
-        <div class="flow-step">Step 3<br>对症调参<br>见下方清单</div>
-    </div>
-
-    <h3>SSE 参数说明</h3>
+    <h3>Cesium 中的三种坐标系</h3>
     <table>
-        <thead><tr><th>参数</th><th>含义</th><th>默认值</th><th>调优建议</th></tr></thead>
+        <thead><tr><th>坐标系</th><th>类型</th><th>表示方式</th><th>典型用途</th></tr></thead>
         <tbody>
-            <tr><td><code>maximumScreenSpaceError</code></td><td>屏幕空间误差阈值（像素）</td><td>16</td><td>值越大加载越粗略但越快；移动端建议 24~32</td></tr>
-            <tr><td><code>maximumMemoryUsage</code></td><td>3D Tiles 最大内存占用（MB）</td><td>512</td><td>低端设备限制到 256，防止 OOM</td></tr>
-            <tr><td><code>resolutionScale</code></td><td>渲染分辨率缩放</td><td>1.0</td><td>设为 0.75 可降低 GPU 压力，牺牲清晰度</td></tr>
+            <tr>
+                <td><strong>WGS84 经纬度</strong></td>
+                <td><code>Cartographic</code></td>
+                <td>经度 (°) / 纬度 (°) / 高程 (m)</td>
+                <td>GPS 定位、用户输入坐标、地理编码</td>
+            </tr>
+            <tr>
+                <td><strong>笛卡尔坐标</strong></td>
+                <td><code>Cartesian3</code></td>
+                <td>X / Y / Z（米，地心坐标系）</td>
+                <td>Entity 定位、空间距离计算、模型变换</td>
+            </tr>
+            <tr>
+                <td><strong>屏幕坐标</strong></td>
+                <td><code>Cartesian2</code></td>
+                <td>px_x / px_y</td>
+                <td>鼠标交互、UI 弹窗定位、拾取操作</td>
+            </tr>
         </tbody>
     </table>
 
-    <h3>傻瓜式优化清单</h3>
+    <h3>核心转换流程</h3>
+    <div class="flow">
+        <div class="flow-step">WGS84 经纬度<br><code>(lng, lat, alt)</code></div>
+        <span class="flow-arrow">⇄</span>
+        <div class="flow-step">Cartesian3 笛卡尔<br><code>(x, y, z)</code></div>
+        <span class="flow-arrow">⇄</span>
+        <div class="flow-step">屏幕坐标<br><code>(px, py)</code></div>
+    </div>
+
+    <h3>关键转换 API</h3>
     <div class="card-grid">
         <div class="card">
-            <h4>1. 开启按需渲染</h4>
-            <p><code>requestRenderMode = true</code><br>静态场景下 GPU 利用率可降至 5% 以下。必须配合 <code>maximumRenderTimeChange</code> 使用。</p>
+            <h4>经纬度 → Cartesian3</h4>
+            <p><code>Cesium.Cartesian3.fromDegrees(lng, lat, alt)</code></p>
+            <p style="color:var(--text-dim);font-size:13px;">最常用的转换，创建 Entity 时必用。</p>
         </div>
         <div class="card">
-            <h4>2. 调大 SSE</h4>
-            <p><code>maximumScreenSpaceError = 24</code><br>减少同时加载的高精度瓦片数，帧率立竿见影。</p>
+            <h4>Cartesian3 → 经纬度</h4>
+            <p><code>Cesium.Cartographic.fromCartesian(cartesian)</code></p>
+            <p style="color:var(--text-dim);font-size:13px;">返回弧度值，需配合 <code>Math.toDegrees()</code> 转角度。</p>
         </div>
         <div class="card">
-            <h4>3. 关闭特效</h4>
-            <p>关闭 <code>shadows</code>、<code>fog</code>、<code>FXAA</code>，每项可释放 5~15% 的 GPU 开销。</p>
+            <h4>屏幕 → 世界坐标</h4>
+            <p><code>scene.pickPosition(screenPos)</code></p>
+            <p><code>camera.pickEllipsoid(screenPos)</code></p>
+            <p style="color:var(--text-dim);font-size:13px;">前者考虑地形/模型深度，后者仅椭球面。</p>
         </div>
         <div class="card">
-            <h4>4. 降低分辨率</h4>
-            <p><code>resolutionScale = 0.75</code><br>渲染像素减少 ~44%，适用于低端显卡或 4K 屏。</p>
-        </div>
-        <div class="card">
-            <h4>5. Entity → Primitive</h4>
-            <p>超过 100 个同类对象，改用 <code>PointPrimitiveCollection</code> / <code>BillboardCollection</code>，性能提升 10x。</p>
-        </div>
-        <div class="card">
-            <h4>6. 限制内存</h4>
-            <p><code>maximumMemoryUsage = 256</code><br>防止低端设备因 3D Tiles 缓存过大导致 OOM 崩溃。</p>
+            <h4>世界坐标 → 屏幕</h4>
+            <p><code>SceneTransforms.wgs84ToWindowCoordinates(scene, cartesian)</code></p>
+            <p style="color:var(--text-dim);font-size:13px;">用于在 3D 对象上方叠加 HTML 弹窗。</p>
         </div>
     </div>
 
-    <a class="demo-btn" href="demo-05-performance.html" target="_blank">打开示例 → demo-05-performance.html</a>
+    <div class="alert alert-danger">
+        <span class="alert-icon">⛔</span>
+        <div><strong>最常见的坑：</strong><code>Cartesian3.fromDegrees()</code> 参数顺序是 <strong>(经度, 纬度, 高度)</strong>，不是 (纬度, 经度)！搞反了东西就会"放歪"——中国的点会跑到大西洋上。</div>
+    </div>
+
+    <div class="alert alert-info">
+        <span class="alert-icon">💡</span>
+        <div>坐标转换 API（<code>Cartesian3</code>、<code>Cartographic</code>、<code>Math</code>）属于 Cesium 核心模块，CDN 版和超图版均可使用，无版本差异。</div>
+    </div>
+
+    <a class="demo-btn" href="demo-05-coordinates.html" target="_blank">打开示例 → demo-05-coordinates.html</a>
 </section>
 
 <!-- ════════════════════ 总结 ════════════════════ -->
@@ -450,8 +500,8 @@
             <p style="font-size:15px;">≤100 用 Entity，>100 用 Primitive<br>拾取用 <code>scene.pick</code>，属性挂 <code>properties</code></p>
         </div>
         <div class="card" style="border-color:var(--accent);border-width:2px;">
-            <h4 style="font-size:20px;">卡了去哪调？</h4>
-            <p style="font-size:15px;">Inspector 看瓦片 → FPS 看帧率 → SSE 调精度<br>六步清单逐项排查</p>
+            <h4 style="font-size:20px;">坐标怎么转？</h4>
+            <p style="font-size:15px;">经纬度 ⇄ Cartesian3 ⇄ 屏幕坐标<br><code>fromDegrees</code> 参数是 (经度, 纬度)，别搞反了</p>
         </div>
     </div>
 
@@ -463,7 +513,7 @@
             <tr><td><a href="demo-02-entity.html" target="_blank" style="color:var(--accent);">demo-02-entity.html</a></td><td>Entity API</td><td>实体增删改查 + 属性绑定</td></tr>
             <tr><td><a href="demo-03-pick.html" target="_blank" style="color:var(--accent);">demo-03-pick.html</a></td><td>属性查询</td><td>Entity / 3D Tiles 拾取分支</td></tr>
             <tr><td><a href="demo-04-debug.html" target="_blank" style="color:var(--accent);">demo-04-debug.html</a></td><td>调试体检</td><td>Inspector + 控制台 + 自查表</td></tr>
-            <tr><td><a href="demo-05-performance.html" target="_blank" style="color:var(--accent);">demo-05-performance.html</a></td><td>性能优化</td><td>SSE 滑块 + FPS 监控 + 按需渲染</td></tr>
+            <tr><td><a href="demo-05-coordinates.html" target="_blank" style="color:var(--accent);">demo-05-coordinates.html</a></td><td>坐标系统</td><td>WGS84 ⇄ Cartesian3 互转 + 实时坐标跟踪</td></tr>
         </tbody>
     </table>
 </section>
@@ -474,8 +524,8 @@
     <h2>答疑<span>环节</span></h2>
     <p class="qa-line">如果你问我"这个能不能实现"——</p>
     <p class="qa-big">能，但要看数据量。</p>
-    <p class="qa-line" style="margin-top:32px;">如果你问我"为什么页面卡了"——</p>
-    <p class="qa-big">先看 FPS，再查 Network。</p>
+    <p class="qa-line" style="margin-top:32px;">如果你问我"东西放歪了"——</p>
+    <p class="qa-big">经度纬度是不是搞反了？</p>
     <p class="qa-line" style="margin-top:48px;font-size:16px;color:var(--text-dim);">
         现在是提问时间，欢迎随时打断。<br>
         没有蠢问题，只有没问出来的问题。
