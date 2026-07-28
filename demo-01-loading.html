@@ -41,19 +41,30 @@
             position: absolute; top: 66px; left: 16px; z-index: 10;
             background: rgba(11, 30, 61, .94); color: #fff;
             padding: 16px 20px; border-radius: 8px; border: 1px solid #2ec5ad;
-            width: 310px; font-size: 13px; max-height: calc(100vh - 90px); overflow-y: auto;
+            width: 320px; font-size: 13px; max-height: calc(100vh - 90px); overflow-y: auto;
         }
         #panel h3 { color: #2ec5ad; font-size: 14px; margin: 14px 0 8px; }
         #panel h3:first-child { margin-top: 0; }
-        #panel label {
+        #panel .layer-item {
             display: flex; align-items: center; gap: 8px; padding: 5px 8px;
-            cursor: pointer; border-radius: 4px; transition: background .15s;
+            border-radius: 4px; transition: background .15s;
         }
-        #panel label:hover { background: rgba(46,197,173,.08); }
+        #panel .layer-item:hover { background: rgba(46,197,173,.08); }
+        #panel .layer-item label {
+            display: flex; align-items: center; gap: 8px; cursor: pointer; flex: 1; min-width: 0;
+        }
         #panel input[type="radio"], #panel input[type="checkbox"] {
             accent-color: #2ec5ad; width: 15px; height: 15px; flex-shrink: 0;
         }
         #panel .desc { font-size: 11px; color: #8ba3bf; margin-left: 23px; margin-top: -2px; }
+        .btn-locate {
+            flex-shrink: 0; width: 26px; height: 26px; border: none; border-radius: 4px;
+            background: rgba(46,197,173,.15); color: #2ec5ad; cursor: pointer;
+            font-size: 14px; line-height: 26px; text-align: center;
+            transition: background .2s;
+        }
+        .btn-locate:hover { background: rgba(46,197,173,.35); }
+        .btn-locate:disabled { opacity: .3; cursor: default; }
         .warning {
             margin-top: 14px; padding: 8px 12px;
             background: rgba(255, 193, 7, .12); border-left: 3px solid #ffc107;
@@ -66,6 +77,15 @@
             padding: 8px 14px; border-radius: 4px; font-size: 12px;
             max-width: 50vw; word-break: break-all;
         }
+        #cameraInfo {
+            position: absolute; bottom: 16px; right: 16px; z-index: 10;
+            background: rgba(10, 22, 40, .92); color: #e8edf3;
+            padding: 8px 16px; border-radius: 4px; font-size: 12px;
+            font-family: 'Consolas', 'Fira Code', monospace;
+            border: 1px solid rgba(46,197,173,.3);
+            display: flex; gap: 16px; align-items: center;
+        }
+        #cameraInfo .ci-label { color: #2ec5ad; font-weight: 600; font-size: 11px; margin-right: 4px; }
     </style>
 </head>
 <body>
@@ -76,48 +96,88 @@
     <div id="cesiumContainer"></div>
 
     <div id="panel">
-        <h3>🌍 底图影像（单选切换）</h3>
-
-        <label><input type="radio" name="imagery" value="2" checked> Bing Maps Aerial</label>
-        <label><input type="radio" name="imagery" value="3"> Bing Maps Aerial + Labels</label>
-        <label><input type="radio" name="imagery" value="4"> Bing Maps Road</label>
-        <hr class="divider">
-        <label><input type="radio" name="imagery" value="3830182"> Google Satellite</label>
-        <label><input type="radio" name="imagery" value="3830183"> Google Satellite + Labels</label>
-        <label><input type="radio" name="imagery" value="3830184"> Google Roadmap</label>
-        <label><input type="radio" name="imagery" value="3830185"> Google Labels Only</label>
-        <label><input type="radio" name="imagery" value="3830186"> Google Contour</label>
+        <h3>🌍 底图影像（单选）</h3>
+        <div class="layer-item"><label><input type="radio" name="imagery" value="2" checked> Bing Maps Aerial</label></div>
+        <div class="layer-item"><label><input type="radio" name="imagery" value="3"> Bing Aerial + Labels</label></div>
+        <div class="layer-item"><label><input type="radio" name="imagery" value="3830182"> Google Satellite</label></div>
 
         <h3>⛰ 地形</h3>
-        <label><input type="checkbox" id="chkTerrain" checked> Cesium World Terrain</label>
-        <div class="desc">Asset ID: 1 · Quantized-Mesh 格式</div>
+        <div class="layer-item">
+            <label><input type="checkbox" id="chkTerrain" checked> Cesium World Terrain</label>
+        </div>
+        <div class="desc">Ion Asset 1 · Quantized-Mesh</div>
 
-        <h3>🏗 3D Tiles（Ion 平台）</h3>
-        <label><input type="checkbox" id="chkOSM"> Cesium OSM Buildings</label>
-        <div class="desc">Ion Asset 96188 · 全球建筑白模</div>
-        <label><input type="checkbox" id="chkGoogle3D"> Google Photorealistic 3D Tiles</label>
-        <div class="desc">Ion Asset 2275207 · 全球真实感三维</div>
+        <h3>🏗 3D Tiles</h3>
+
+        <div class="layer-item">
+            <label><input type="checkbox" id="chkOSM"> OSM Buildings</label>
+            <button class="btn-locate" id="locOSM" disabled title="飞行定位">📍</button>
+        </div>
+        <div class="desc">Ion 96188 · 全球建筑白模</div>
+
+        <div class="layer-item">
+            <label><input type="checkbox" id="chkGoogle3D"> Google Photorealistic</label>
+            <button class="btn-locate" id="locGoogle3D" disabled title="飞行定位">📍</button>
+        </div>
+        <div class="desc">Ion 2275207 · 全球真实感三维</div>
+
+        <div class="layer-item">
+            <label><input type="checkbox" id="chkSF"> 旧金山倾斜摄影</label>
+            <button class="btn-locate" id="locSF" disabled title="飞行定位">📍</button>
+        </div>
+        <div class="desc">Ion 1415196 · Aerometrex 高精度三维</div>
+
+        <div class="layer-item">
+            <label><input type="checkbox" id="chkDenver"> 丹佛倾斜摄影</label>
+            <button class="btn-locate" id="locDenver" disabled title="飞行定位">📍</button>
+        </div>
+        <div class="desc">Ion 354307 · Aerometrex 高精度三维</div>
+
+        <div class="layer-item">
+            <label><input type="checkbox" id="chkMelbourne"> 墨尔本点云</label>
+            <button class="btn-locate" id="locMelbourne" disabled title="飞行定位">📍</button>
+        </div>
+        <div class="desc">Ion 43978 · 大规模城市点云</div>
+
+        <div class="layer-item">
+            <label><input type="checkbox" id="chkMontreal"> 蒙特利尔点云</label>
+            <button class="btn-locate" id="locMontreal" disabled title="飞行定位">📍</button>
+        </div>
+        <div class="desc">Ion 28945 · 城市点云数据</div>
 
         <hr class="divider">
-        <h3>📦 模型与格式加载（URL）</h3>
-        <label><input type="checkbox" id="chkGltf"> glTF 模型（公开样本）</label>
-        <div class="desc">Khronos CesiumMilkTruck · Entity API</div>
-        <label><input type="checkbox" id="chkGltf2"> glTF 模型 · Duck</label>
-        <div class="desc">Khronos Duck · Primitive API</div>
+        <h3>📦 glTF 模型</h3>
+
+        <div class="layer-item">
+            <label><input type="checkbox" id="chkGltf"> CesiumMilkTruck</label>
+            <button class="btn-locate" id="locGltf" disabled title="飞行定位">📍</button>
+        </div>
+        <div class="desc">Entity API · Khronos 公开样本</div>
+
+        <div class="layer-item">
+            <label><input type="checkbox" id="chkGltf2"> Duck</label>
+            <button class="btn-locate" id="locGltf2" disabled title="飞行定位">📍</button>
+        </div>
+        <div class="desc">Primitive API · Model.fromGltfAsync</div>
 
         <div class="warning">
-            ⚠ 倾斜摄影 / 3D Tiles 必须流式加载，不可全量读入内存。OBJ 格式不被 Cesium 直接支持，需先转为 glTF/glb。
+            ⚠ 倾斜摄影 / 点云必须通过 3D Tiles 流式加载。OBJ 格式需先转为 glTF/glb。
         </div>
     </div>
 
     <div id="status">就绪</div>
+    <div id="cameraInfo">
+        <span><span class="ci-label">LNG</span><span id="camLng">--</span></span>
+        <span><span class="ci-label">LAT</span><span id="camLat">--</span></span>
+        <span><span class="ci-label">ALT</span><span id="camAlt">--</span></span>
+    </div>
 
     <script>
-        const statusEl = document.getElementById('status');
+        var statusEl = document.getElementById('status');
         function setStatus(msg) { statusEl.textContent = msg; }
 
         (async function () {
-            const viewer = new Cesium.Viewer('cesiumContainer', {
+            var viewer = new Cesium.Viewer('cesiumContainer', {
                 baseLayerPicker: false,
                 geocoder: false,
                 homeButton: false,
@@ -140,12 +200,12 @@
             }
 
             // ── 影像切换 ──
-            let currentImageryLayer = viewer.imageryLayers.get(0);
+            var currentImageryLayer = viewer.imageryLayers.get(0);
 
             async function switchImagery(assetId) {
                 setStatus('正在切换影像 (Asset ' + assetId + ') …');
                 try {
-                    const provider = await Cesium.IonImageryProvider.fromAssetId(assetId);
+                    var provider = await Cesium.IonImageryProvider.fromAssetId(assetId);
                     if (currentImageryLayer) {
                         viewer.imageryLayers.remove(currentImageryLayer, true);
                     }
@@ -178,58 +238,72 @@
                 }
             });
 
-            // ── 3D Tiles：OSM Buildings ──
-            let osmTileset = null;
-            document.getElementById('chkOSM').addEventListener('change', async function () {
-                if (this.checked) {
-                    setStatus('正在加载 OSM Buildings …');
-                    try {
-                        osmTileset = await Cesium.Cesium3DTileset.fromIonAssetId(96188);
-                        viewer.scene.primitives.add(osmTileset);
-                        viewer.flyTo(osmTileset);
-                        setStatus('OSM Buildings 加载完成');
-                    } catch (e) {
-                        setStatus('OSM Buildings 加载失败: ' + e.message);
-                        this.checked = false;
-                    }
-                } else if (osmTileset) {
-                    viewer.scene.primitives.remove(osmTileset);
-                    osmTileset = null;
-                    setStatus('OSM Buildings 已移除');
-                }
-            });
+            // ═══════════════════════════════════════════════
+            //  通用 3D Tiles 加载器
+            //  管理 checkbox / locate 按钮 / tileset 实例的映射
+            // ═══════════════════════════════════════════════
+            var tilesetRegistry = {};
 
-            // ── 3D Tiles：Google Photorealistic ──
-            let google3dTileset = null;
-            document.getElementById('chkGoogle3D').addEventListener('change', async function () {
-                if (this.checked) {
-                    setStatus('正在加载 Google Photorealistic 3D Tiles（可能较慢）…');
-                    try {
-                        google3dTileset = await Cesium.Cesium3DTileset.fromIonAssetId(2275207);
-                        viewer.scene.primitives.add(google3dTileset);
-                        setStatus('Google Photorealistic 3D Tiles 加载完成');
-                    } catch (e) {
-                        setStatus('Google 3D Tiles 加载失败: ' + e.message);
-                        this.checked = false;
-                    }
-                } else if (google3dTileset) {
-                    viewer.scene.primitives.remove(google3dTileset);
-                    google3dTileset = null;
-                    setStatus('Google 3D Tiles 已移除');
-                }
-            });
+            function registerTileset(checkboxId, locateBtnId, ionAssetId, label) {
+                var chk = document.getElementById(checkboxId);
+                var loc = document.getElementById(locateBtnId);
+                var entry = { tileset: null, ionAssetId: ionAssetId, label: label };
+                tilesetRegistry[checkboxId] = entry;
 
-            // ── glTF 模型：CesiumMilkTruck（Entity API 方式）──
-            let gltfEntity = null;
-            document.getElementById('chkGltf').addEventListener('change', function () {
+                chk.addEventListener('change', async function () {
+                    if (this.checked) {
+                        setStatus('正在加载 ' + label + ' …');
+                        try {
+                            entry.tileset = await Cesium.Cesium3DTileset.fromIonAssetId(ionAssetId);
+                            viewer.scene.primitives.add(entry.tileset);
+                            viewer.flyTo(entry.tileset);
+                            loc.disabled = false;
+                            setStatus(label + ' 加载完成');
+                        } catch (e) {
+                            setStatus(label + ' 加载失败: ' + e.message);
+                            console.error(label + ' load error:', e);
+                            this.checked = false;
+                        }
+                    } else if (entry.tileset) {
+                        viewer.scene.primitives.remove(entry.tileset);
+                        entry.tileset = null;
+                        loc.disabled = true;
+                        setStatus(label + ' 已移除');
+                    }
+                });
+
+                loc.addEventListener('click', function () {
+                    if (entry.tileset) {
+                        viewer.flyTo(entry.tileset);
+                        setStatus('正在飞向 ' + label);
+                    }
+                });
+            }
+
+            registerTileset('chkOSM', 'locOSM', 96188, 'OSM Buildings');
+            registerTileset('chkGoogle3D', 'locGoogle3D', 2275207, 'Google Photorealistic 3D Tiles');
+            registerTileset('chkSF', 'locSF', 1415196, '旧金山倾斜摄影');
+            registerTileset('chkDenver', 'locDenver', 354307, '丹佛倾斜摄影');
+            registerTileset('chkMelbourne', 'locMelbourne', 43978, '墨尔本点云');
+            registerTileset('chkMontreal', 'locMontreal', 28945, '蒙特利尔点云');
+
+            // ═══════════════════════════════════════════════
+            //  glTF 模型加载
+            // ═══════════════════════════════════════════════
+
+            // ── CesiumMilkTruck（Entity API）──
+            var gltfEntity = null;
+            var chkGltf = document.getElementById('chkGltf');
+            var locGltf = document.getElementById('locGltf');
+
+            chkGltf.addEventListener('change', function () {
                 if (this.checked) {
                     setStatus('正在加载 glTF 模型（CesiumMilkTruck）…');
-                    var modelUrl = 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/CesiumMilkTruck/glTF-Binary/CesiumMilkTruck.glb';
                     gltfEntity = viewer.entities.add({
                         name: 'CesiumMilkTruck',
                         position: Cesium.Cartesian3.fromDegrees(-74.006, 40.7128, 0),
                         model: {
-                            uri: modelUrl,
+                            uri: 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/CesiumMilkTruck/glTF-Binary/CesiumMilkTruck.glb',
                             minimumPixelSize: 64,
                             maximumScale: 200,
                             heightReference: Cesium.HeightReference.CLAMP_TO_GROUND
@@ -239,23 +313,36 @@
                     viewer.flyTo(gltfEntity, {
                         offset: new Cesium.HeadingPitchRange(0, Cesium.Math.toRadians(-30), 150)
                     });
-                    setStatus('glTF 模型已加载（Entity API · 纽约）');
+                    locGltf.disabled = false;
+                    setStatus('CesiumMilkTruck 已加载（Entity API · 纽约）');
                 } else if (gltfEntity) {
                     viewer.entities.remove(gltfEntity);
                     gltfEntity = null;
-                    setStatus('glTF 模型已移除');
+                    locGltf.disabled = true;
+                    setStatus('CesiumMilkTruck 已移除');
                 }
             });
 
-            // ── glTF 模型：Duck（Primitive API / Model.fromGltfAsync 方式）──
-            let gltfPrimitive = null;
-            document.getElementById('chkGltf2').addEventListener('change', async function () {
+            locGltf.addEventListener('click', function () {
+                if (gltfEntity) {
+                    viewer.flyTo(gltfEntity, {
+                        offset: new Cesium.HeadingPitchRange(0, Cesium.Math.toRadians(-30), 150)
+                    });
+                }
+            });
+
+            // ── Duck（Primitive API / Model.fromGltfAsync）──
+            var gltfPrimitive = null;
+            var duckPosition = Cesium.Cartesian3.fromDegrees(116.39, 39.91, 10);
+            var chkGltf2 = document.getElementById('chkGltf2');
+            var locGltf2 = document.getElementById('locGltf2');
+
+            chkGltf2.addEventListener('change', async function () {
                 if (this.checked) {
                     setStatus('正在加载 glTF 模型（Duck · Primitive API）…');
                     try {
-                        var position = Cesium.Cartesian3.fromDegrees(116.39, 39.91, 10);
                         var hpr = new Cesium.HeadingPitchRoll(0, 0, 0);
-                        var modelMatrix = Cesium.Transforms.headingPitchRollToFixedFrame(position, hpr);
+                        var modelMatrix = Cesium.Transforms.headingPitchRollToFixedFrame(duckPosition, hpr);
 
                         gltfPrimitive = await Cesium.Model.fromGltfAsync({
                             url: 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/Duck/glTF-Binary/Duck.glb',
@@ -266,23 +353,44 @@
                         viewer.scene.primitives.add(gltfPrimitive);
                         viewer.camera.flyTo({
                             destination: Cesium.Cartesian3.fromDegrees(116.39, 39.905, 300),
-                            orientation: {
-                                heading: 0,
-                                pitch: Cesium.Math.toRadians(-45),
-                                roll: 0
-                            }
+                            orientation: { heading: 0, pitch: Cesium.Math.toRadians(-45), roll: 0 }
                         });
-                        setStatus('glTF 模型已加载（Primitive API · 北京）');
+                        locGltf2.disabled = false;
+                        setStatus('Duck 已加载（Primitive API · 北京）');
                     } catch (e) {
-                        setStatus('glTF (Primitive) 加载失败: ' + e.message);
+                        setStatus('Duck 加载失败: ' + e.message);
                         this.checked = false;
                     }
                 } else if (gltfPrimitive) {
                     viewer.scene.primitives.remove(gltfPrimitive);
                     gltfPrimitive = null;
-                    setStatus('glTF 模型已移除');
+                    locGltf2.disabled = true;
+                    setStatus('Duck 已移除');
                 }
             });
+
+            locGltf2.addEventListener('click', function () {
+                viewer.camera.flyTo({
+                    destination: Cesium.Cartesian3.fromDegrees(116.39, 39.905, 300),
+                    orientation: { heading: 0, pitch: Cesium.Math.toRadians(-45), roll: 0 }
+                });
+            });
+
+            // ═══════════════════════════════════════════════
+            //  实时相机坐标
+            // ═══════════════════════════════════════════════
+            var camLngEl = document.getElementById('camLng');
+            var camLatEl = document.getElementById('camLat');
+            var camAltEl = document.getElementById('camAlt');
+
+            viewer.camera.changed.addEventListener(function () {
+                var carto = Cesium.Cartographic.fromCartesian(viewer.camera.positionWC);
+                camLngEl.textContent = Cesium.Math.toDegrees(carto.longitude).toFixed(4) + '°';
+                camLatEl.textContent = Cesium.Math.toDegrees(carto.latitude).toFixed(4) + '°';
+                var h = carto.height;
+                camAltEl.textContent = h > 1000 ? (h / 1000).toFixed(1) + ' km' : h.toFixed(0) + ' m';
+            });
+            viewer.camera.percentageChanged = 0.01;
         })();
     </script>
 </body>

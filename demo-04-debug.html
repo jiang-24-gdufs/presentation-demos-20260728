@@ -189,7 +189,6 @@
             if (tilesetInstance) {
                 tilesetInstance.debugWireframe = wireframeOn;
             }
-            viewer.scene.globe.enableLighting = wireframeOn;
         }
 
         function printEntityList() {
@@ -229,10 +228,18 @@
                 return;
             }
             console.group('3D Tiles 统计');
-            console.log('URL:', tilesetInstance.url);
-            console.log('已加载瓦片数:', tilesetInstance.statistics ? tilesetInstance.statistics.numberOfLoadedTilesTotal : 'N/A');
             console.log('maximumScreenSpaceError:', tilesetInstance.maximumScreenSpaceError);
-            console.log('总内存(MB):', tilesetInstance.totalMemoryUsageInBytes ? (tilesetInstance.totalMemoryUsageInBytes / 1048576).toFixed(2) : 'N/A');
+            if (tilesetInstance.statistics) {
+                console.log('已加载瓦片数:', tilesetInstance.statistics.numberOfLoadedTilesTotal);
+            }
+            if (typeof tilesetInstance.totalMemoryUsageInBytes === 'number') {
+                console.log('总内存(MB):', (tilesetInstance.totalMemoryUsageInBytes / 1048576).toFixed(2));
+            }
+            var root = tilesetInstance.root;
+            if (root) {
+                console.log('根瓦片 geometricError:', root.geometricError);
+                console.log('子瓦片数:', root.children ? root.children.length : 0);
+            }
             console.groupEnd();
             alert('3D Tiles 统计已打印到控制台');
         }
@@ -252,10 +259,13 @@
                 });
             });
 
-            Cesium.Cesium3DTileset.fromIonAssetId(40866).then(function (tileset) {
+            Cesium.Cesium3DTileset.fromIonAssetId(96188).then(function (tileset) {
                 tilesetInstance = tileset;
                 viewer.scene.primitives.add(tileset);
                 viewer.zoomTo(tileset);
+            }).catch(function (e) {
+                console.error('3D Tiles 加载失败:', e);
+                alert('3D Tiles 加载失败: ' + e.message);
             });
         }
     </script>

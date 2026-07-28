@@ -30,7 +30,6 @@
         typeof Cesium.Cesium3DTileset.fromIonAssetId === 'function';
 
     window.__CESIUM_ENV__ = {
-        token: CESIUM_ION_TOKEN,
         version: cesiumVersion,
         isSuperMap: isSuperMap,
         isModernCesium: isModernCesium,
