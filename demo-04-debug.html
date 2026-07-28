@@ -3,9 +3,13 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>模块四：调试与体检</title>
-    <link href="../Build/Cesium/Widgets/widgets.css" rel="stylesheet">
-    <script src="../Build/Cesium/Cesium.js"></script>
+    <title>模块五：调试与体检</title>
+    <!--
+        本示例复用 demo-01 的场景数据（CDN Cesium + Ion 3D Tiles），
+        在此基础上演示 Inspector、帧率监测、控制台调试等工具。
+    -->
+    <link href="https://cesium.com/downloads/cesiumjs/releases/1.143/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+    <script src="https://cesium.com/downloads/cesiumjs/releases/1.143/Build/Cesium/Cesium.js"></script>
     <script src="shared-config.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -20,254 +24,368 @@
         }
         #header h1 { color: #fff; font-size: 20px; font-weight: 600; }
         #header h1 span { color: #2ec5ad; }
+        #header .badge {
+            background: #2ec5ad; color: #0b1e3d; font-size: 11px; font-weight: 700;
+            padding: 2px 8px; border-radius: 3px; margin-left: 10px; vertical-align: middle;
+        }
         #header a {
             color: #8ecae6; text-decoration: none; font-size: 14px;
             padding: 6px 16px; border: 1px solid #8ecae6; border-radius: 4px;
             transition: all .2s;
         }
         #header a:hover { background: #8ecae6; color: #0b1e3d; }
+
+        /* 左侧数据面板（复用 demo-01 的数据加载） */
         #panel {
-            position: absolute; top: 70px; left: 16px; z-index: 10;
-            background: rgba(11, 30, 61, .92); color: #fff;
+            position: absolute; top: 66px; left: 16px; z-index: 10;
+            background: rgba(11, 30, 61, .94); color: #fff;
             padding: 16px 20px; border-radius: 8px; border: 1px solid #2ec5ad;
-            min-width: 300px; font-size: 13px;
+            width: 300px; font-size: 13px; max-height: calc(100vh - 90px); overflow-y: auto;
         }
-        #panel h3 { color: #2ec5ad; font-size: 15px; margin-bottom: 12px; }
-        #panel button {
-            display: block; width: 100%; padding: 8px 14px; margin: 6px 0;
-            background: #2ec5ad; color: #fff; border: none; border-radius: 4px;
-            cursor: pointer; font-size: 13px; transition: background .2s;
+        #panel h3 { color: #2ec5ad; font-size: 14px; margin: 14px 0 8px; }
+        #panel h3:first-child { margin-top: 0; }
+        #panel .layer-item {
+            display: flex; align-items: center; gap: 8px; padding: 5px 8px;
+            border-radius: 4px; transition: background .15s;
         }
-        #panel button:hover { background: #26a08d; }
-        #panel hr { border: none; border-top: 1px solid #526f82; margin: 12px 0; }
-        #symptomTable {
-            position: absolute; top: 70px; right: 16px; z-index: 10;
-            background: rgba(11, 30, 61, .92); color: #fff;
+        #panel .layer-item:hover { background: rgba(46,197,173,.08); }
+        #panel .layer-item label {
+            display: flex; align-items: center; gap: 8px; cursor: pointer; flex: 1; min-width: 0;
+        }
+        #panel input[type="checkbox"] {
+            accent-color: #2ec5ad; width: 15px; height: 15px; flex-shrink: 0;
+        }
+        #panel .desc { font-size: 11px; color: #8ba3bf; margin-left: 23px; margin-top: -2px; }
+
+        /* 右下角调试按钮 */
+        #debugToggle {
+            position: absolute; bottom: 46px; right: 16px; z-index: 20;
+            width: 42px; height: 42px; border-radius: 50%;
+            background: rgba(46, 197, 173, .9); color: #0b1e3d;
+            border: none; font-size: 20px; cursor: pointer;
+            box-shadow: 0 4px 16px rgba(0,0,0,.3);
+            transition: transform .2s, background .2s;
+        }
+        #debugToggle:hover { transform: scale(1.1); background: #2ec5ad; }
+
+        /* 调试弹窗 */
+        #debugPopup {
+            display: none; position: absolute; bottom: 96px; right: 16px; z-index: 20;
+            background: rgba(11, 30, 61, .96); color: #fff;
             padding: 16px 20px; border-radius: 8px; border: 1px solid #2ec5ad;
-            min-width: 340px; font-size: 13px; max-height: calc(100vh - 100px); overflow-y: auto;
+            width: 240px; font-size: 13px;
+            box-shadow: 0 8px 32px rgba(0,0,0,.5);
         }
-        #symptomTable h3 { color: #2ec5ad; font-size: 15px; margin-bottom: 10px; }
-        #symptomTable table { width: 100%; border-collapse: collapse; }
-        #symptomTable th {
-            text-align: left; padding: 6px 8px; background: rgba(46,197,173,.2);
-            color: #2ec5ad; font-size: 12px;
+        #debugPopup h4 { color: #2ec5ad; font-size: 14px; margin-bottom: 10px; }
+        #debugPopup button {
+            display: block; width: 100%; padding: 7px 12px; margin: 5px 0;
+            background: rgba(46,197,173,.15); color: #e8edf3; border: 1px solid rgba(46,197,173,.3);
+            border-radius: 4px; cursor: pointer; font-size: 12px; text-align: left;
+            transition: background .15s;
         }
-        #symptomTable td { padding: 6px 8px; border-bottom: 1px solid rgba(255,255,255,.08); font-size: 12px; }
-        .tag-red { color: #e74c3c; font-weight: bold; }
-        .tag-yellow { color: #ffc107; font-weight: bold; }
+        #debugPopup button:hover { background: rgba(46,197,173,.3); }
+        #debugPopup hr { border: none; border-top: 1px solid #526f82; margin: 8px 0; }
+
         #fpsDisplay {
-            position: absolute; bottom: 16px; left: 16px; z-index: 10;
+            position: absolute; top: 66px; right: 16px; z-index: 10;
             background: rgba(11, 30, 61, .9); color: #2ec5ad;
-            padding: 10px 16px; border-radius: 4px; font-size: 14px;
+            padding: 8px 14px; border-radius: 4px; font-size: 14px;
             font-family: 'Consolas', monospace; border: 1px solid #2ec5ad;
+            display: none;
         }
+
+        #status {
+            position: absolute; bottom: 36px; left: 16px; z-index: 10;
+            background: rgba(11, 30, 61, .85); color: #8ecae6;
+            padding: 8px 14px; border-radius: 4px; font-size: 12px;
+            max-width: 50vw; word-break: break-all;
+        }
+        #coordBar {
+            position: absolute; bottom: 0; left: 0; right: 0; z-index: 10;
+            background: rgba(10, 22, 40, .92);
+            border-top: 1px solid rgba(46,197,173,.3);
+            padding: 6px 24px;
+            display: flex; gap: 24px; align-items: center;
+            font-family: 'Consolas', monospace; font-size: 12px; color: #8ba3bf;
+        }
+        #coordBar .coord-label { color: #2ec5ad; font-weight: 600; font-size: 11px; margin-right: 6px; }
+        #coordBar .coord-value { color: #e8edf3; }
     </style>
 </head>
 <body>
     <div id="header">
-        <h1>模块四：<span>调试与体检</span></h1>
+        <h1>模块五：<span>调试与体检</span><span class="badge">CDN Cesium</span></h1>
         <a href="index.html">← 返回讲解文档</a>
     </div>
     <div id="cesiumContainer"></div>
 
     <div id="panel">
-        <h3>调试工具</h3>
-        <button onclick="toggleInspector()">切换 3D Tiles Inspector</button>
-        <button onclick="toggleFPS()">切换帧率显示</button>
-        <button onclick="toggleWireframe()">切换线框模式</button>
-        <hr>
-        <h3>控制台调试</h3>
-        <button onclick="printEntityList()">打印实体列表到控制台</button>
-        <button onclick="printSceneInfo()">打印场景信息到控制台</button>
-        <button onclick="printTilesetStats()">打印 3D Tiles 统计信息</button>
-        <hr>
-        <button onclick="loadSampleData()">加载示例数据</button>
+        <h3>场景数据</h3>
+        <div class="layer-item"><label><input type="checkbox" id="chkOSM" checked> OSM Buildings</label></div>
+        <div class="desc">Ion 96188 · 全球建筑白模</div>
+        <div class="layer-item"><label><input type="checkbox" id="chkSF"> 旧金山倾斜摄影</label></div>
+        <div class="desc">Ion 1415196 · Aerometrex 高精度三维</div>
+        <div class="layer-item"><label><input type="checkbox" id="chkEntities" checked> 测试 Entity（3 个）</label></div>
+        <div class="desc">用于调试 entities.values / pick</div>
     </div>
 
-    <div id="symptomTable">
-        <h3>常见症状自查表</h3>
-        <table>
-            <thead><tr><th>症状</th><th>可能原因</th><th>排查方向</th></tr></thead>
-            <tbody>
-                <tr>
-                    <td class="tag-red">白屏</td>
-                    <td>WebGL 上下文丢失</td>
-                    <td>检查 GPU 驱动 / 硬件加速开关</td>
-                </tr>
-                <tr>
-                    <td class="tag-red">黑屏</td>
-                    <td>底图未加载</td>
-                    <td>Network 面板检查影像服务 URL</td>
-                </tr>
-                <tr>
-                    <td class="tag-yellow">模型悬空</td>
-                    <td>未设置 heightReference</td>
-                    <td>设为 CLAMP_TO_GROUND 或调整高度偏移</td>
-                </tr>
-                <tr>
-                    <td class="tag-yellow">模型沉入地下</td>
-                    <td>地形精度 / 高度偏移</td>
-                    <td>检查 modelMatrix 或使用 heightOffset</td>
-                </tr>
-                <tr>
-                    <td class="tag-red">跨域报错（CORS）</td>
-                    <td>资源服务器未配 CORS</td>
-                    <td>服务端添加 Access-Control-Allow-Origin</td>
-                </tr>
-                <tr>
-                    <td class="tag-yellow">瓦片闪烁</td>
-                    <td>SSE 值过小 / 网络带宽不足</td>
-                    <td>增大 maximumScreenSpaceError</td>
-                </tr>
-                <tr>
-                    <td class="tag-yellow">帧率低</td>
-                    <td>Entity 过多 / 无 LOD</td>
-                    <td>改用 Primitive + 开启 requestRenderMode</td>
-                </tr>
-                <tr>
-                    <td class="tag-red">Token 报错 401</td>
-                    <td>Ion Token 过期或无效</td>
-                    <td>到 ion.cesium.com 重新生成</td>
-                </tr>
-            </tbody>
-        </table>
+    <button id="debugToggle" onclick="toggleDebugPopup()" title="调试工具">🔧</button>
+
+    <div id="debugPopup">
+        <h4>调试工具</h4>
+        <button onclick="toggleInspector()">Cesium Inspector</button>
+        <button onclick="toggleFPS()">帧率 (FPS) 显示</button>
+        <button onclick="toggleWireframe()">线框模式</button>
+        <hr>
+        <button onclick="printEntityList()">→ Console: 实体列表</button>
+        <button onclick="printSceneInfo()">→ Console: 场景信息</button>
+        <button onclick="printTilesetStats()">→ Console: Tileset 统计</button>
     </div>
 
-    <div id="fpsDisplay" style="display:none;">FPS: --</div>
+    <div id="fpsDisplay">FPS: --</div>
+    <div id="status">就绪 — 点击右下角 🔧 打开调试工具</div>
+    <div id="coordBar">
+        <span><span class="coord-label">LNG</span><span class="coord-value" id="camLng">--</span></span>
+        <span><span class="coord-label">LAT</span><span class="coord-value" id="camLat">--</span></span>
+        <span><span class="coord-label">ALT</span><span class="coord-value" id="camAlt">--</span></span>
+    </div>
 
     <script>
-        const viewer = new Cesium.Viewer('cesiumContainer', {
-            terrainProvider: Cesium.createWorldTerrain(),
-            baseLayerPicker: false, geocoder: false, homeButton: false,
-            sceneModePicker: false, navigationHelpButton: false,
-            animation: false, timeline: false, fullscreenButton: false,
-            selectionIndicator: false, infoBox: false
-        });
+        var statusEl = document.getElementById('status');
+        function setStatus(msg) { statusEl.textContent = msg; }
 
-        let inspectorLoaded = false;
-        let fpsShowing = false;
-        let wireframeOn = false;
-        let tilesetInstance = null;
+        // ── 调试弹窗 toggle ──
+        var debugPopupEl = document.getElementById('debugPopup');
+        window.toggleDebugPopup = function () {
+            debugPopupEl.style.display = debugPopupEl.style.display === 'none' ? 'block' : 'none';
+        };
 
-        function toggleInspector() {
-            if (!inspectorLoaded) {
-                viewer.extend(Cesium.viewerCesium3DTilesInspectorMixin);
-                inspectorLoaded = true;
+        (async function () {
+            var viewer = new Cesium.Viewer('cesiumContainer', {
+                baseLayerPicker: false, geocoder: false, homeButton: false,
+                sceneModePicker: false, navigationHelpButton: false,
+                animation: false, timeline: false, fullscreenButton: false,
+                selectionIndicator: false, infoBox: false
+            });
+
+            try {
+                viewer.terrainProvider = await Cesium.CesiumTerrainProvider.fromIonAssetId(1);
+            } catch (e) { console.warn('Terrain fallback:', e); }
+
+            // ═══════════════════════════════════════════════
+            //  场景数据（复用 demo-01 的数据源）
+            // ═══════════════════════════════════════════════
+            var tilesets = {};
+
+            async function loadTileset(key, ionAssetId, label) {
+                setStatus('正在加载 ' + label + ' …');
+                try {
+                    var tileset = await Cesium.Cesium3DTileset.fromIonAssetId(ionAssetId);
+                    viewer.scene.primitives.add(tileset);
+                    tilesets[key] = tileset;
+                    setStatus(label + ' 加载完成');
+                    return tileset;
+                } catch (e) {
+                    setStatus(label + ' 加载失败: ' + e.message);
+                    console.error(label + ' load error:', e);
+                    return null;
+                }
             }
-            const el = document.querySelector('.cesium-3DTilesInspector');
-            if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
-        }
 
-        let lastTime = performance.now();
-        let frameCount = 0;
-        const fpsEl = document.getElementById('fpsDisplay');
-
-        function updateFPS() {
-            if (!fpsShowing) return;
-            frameCount++;
-            const now = performance.now();
-            if (now - lastTime >= 1000) {
-                fpsEl.textContent = 'FPS: ' + frameCount;
-                frameCount = 0;
-                lastTime = now;
+            function removeTileset(key, label) {
+                if (tilesets[key]) {
+                    viewer.scene.primitives.remove(tilesets[key]);
+                    tilesets[key] = null;
+                    setStatus(label + ' 已移除');
+                }
             }
-            requestAnimationFrame(updateFPS);
-        }
 
-        function toggleFPS() {
-            fpsShowing = !fpsShowing;
-            fpsEl.style.display = fpsShowing ? 'block' : 'none';
-            if (fpsShowing) {
-                lastTime = performance.now();
-                frameCount = 0;
-                updateFPS();
-            }
-        }
+            // OSM Buildings（默认开启）
+            var chkOSM = document.getElementById('chkOSM');
+            var osmLoaded = await loadTileset('osm', 96188, 'OSM Buildings');
+            if (osmLoaded) viewer.zoomTo(osmLoaded);
+            else chkOSM.checked = false;
 
-        function toggleWireframe() {
-            wireframeOn = !wireframeOn;
-            if (tilesetInstance) {
-                tilesetInstance.debugWireframe = wireframeOn;
-            }
-        }
+            chkOSM.addEventListener('change', async function () {
+                if (this.checked) {
+                    await loadTileset('osm', 96188, 'OSM Buildings');
+                } else {
+                    removeTileset('osm', 'OSM Buildings');
+                }
+            });
 
-        function printEntityList() {
-            const all = viewer.entities.values;
-            console.group('Entity 列表（共 ' + all.length + ' 个）');
-            all.forEach(function (e) {
-                console.log({
-                    id: e.id,
-                    name: e.name,
-                    hasPosition: !!e.position,
-                    hasPoint: !!e.point,
-                    hasLabel: !!e.label
+            // 旧金山倾斜摄影
+            var chkSF = document.getElementById('chkSF');
+            chkSF.addEventListener('change', async function () {
+                if (this.checked) {
+                    var t = await loadTileset('sf', 1415196, '旧金山倾斜摄影');
+                    if (t) viewer.flyTo(t);
+                } else {
+                    removeTileset('sf', '旧金山倾斜摄影');
+                }
+            });
+
+            // 测试 Entity
+            var testEntities = [
+                { id: 'debug-01', name: '北京', lng: 116.39, lat: 39.91 },
+                { id: 'debug-02', name: '上海', lng: 121.47, lat: 31.23 },
+                { id: 'debug-03', name: '广州', lng: 113.26, lat: 23.13 }
+            ];
+            var chkEntities = document.getElementById('chkEntities');
+
+            function addTestEntities() {
+                testEntities.forEach(function (d) {
+                    if (viewer.entities.getById(d.id)) return;
+                    viewer.entities.add({
+                        id: d.id, name: d.name,
+                        position: Cesium.Cartesian3.fromDegrees(d.lng, d.lat, 0),
+                        point: {
+                            pixelSize: 12, color: Cesium.Color.CYAN,
+                            outlineColor: Cesium.Color.WHITE, outlineWidth: 2,
+                            heightReference: Cesium.HeightReference.CLAMP_TO_GROUND
+                        },
+                        label: {
+                            text: d.name, font: '13px sans-serif',
+                            fillColor: Cesium.Color.WHITE,
+                            outlineColor: Cesium.Color.BLACK, outlineWidth: 2,
+                            style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+                            verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+                            pixelOffset: new Cesium.Cartesian2(0, -18),
+                            heightReference: Cesium.HeightReference.CLAMP_TO_GROUND
+                        },
+                        properties: { city: d.name, source: 'debug-test' }
+                    });
                 });
+            }
+            addTestEntities();
+
+            chkEntities.addEventListener('change', function () {
+                if (this.checked) {
+                    addTestEntities();
+                    setStatus('测试 Entity 已添加');
+                } else {
+                    testEntities.forEach(function (d) {
+                        var e = viewer.entities.getById(d.id);
+                        if (e) viewer.entities.remove(e);
+                    });
+                    setStatus('测试 Entity 已移除');
+                }
             });
-            console.groupEnd();
-            alert('已打印 ' + all.length + ' 个实体到控制台（按 F12 查看）');
-        }
 
-        function printSceneInfo() {
-            const scene = viewer.scene;
-            const camera = viewer.camera;
-            const carto = Cesium.Cartographic.fromCartesian(camera.position);
-            console.group('场景信息');
-            console.log('相机经度:', Cesium.Math.toDegrees(carto.longitude).toFixed(6));
-            console.log('相机纬度:', Cesium.Math.toDegrees(carto.latitude).toFixed(6));
-            console.log('相机高度:', carto.height.toFixed(2), 'm');
-            console.log('Primitive 数:', scene.primitives.length);
-            console.log('Entity 数:', viewer.entities.values.length);
-            console.log('requestRenderMode:', scene.requestRenderMode);
-            console.groupEnd();
-            alert('场景信息已打印到控制台');
-        }
+            // ═══════════════════════════════════════════════
+            //  调试工具
+            // ═══════════════════════════════════════════════
+            var inspectorLoaded = false;
+            window.toggleInspector = function () {
+                if (!inspectorLoaded) {
+                    viewer.extend(Cesium.viewerCesiumInspectorMixin);
+                    inspectorLoaded = true;
+                    setStatus('Cesium Inspector 已启用');
+                }
+                var el = document.querySelector('.cesium-cesiumInspector');
+                if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
+            };
 
-        function printTilesetStats() {
-            if (!tilesetInstance) {
-                alert('请先加载 3D Tiles 数据');
-                return;
-            }
-            console.group('3D Tiles 统计');
-            console.log('maximumScreenSpaceError:', tilesetInstance.maximumScreenSpaceError);
-            if (tilesetInstance.statistics) {
-                console.log('已加载瓦片数:', tilesetInstance.statistics.numberOfLoadedTilesTotal);
-            }
-            if (typeof tilesetInstance.totalMemoryUsageInBytes === 'number') {
-                console.log('总内存(MB):', (tilesetInstance.totalMemoryUsageInBytes / 1048576).toFixed(2));
-            }
-            var root = tilesetInstance.root;
-            if (root) {
-                console.log('根瓦片 geometricError:', root.geometricError);
-                console.log('子瓦片数:', root.children ? root.children.length : 0);
-            }
-            console.groupEnd();
-            alert('3D Tiles 统计已打印到控制台');
-        }
+            var fpsShowing = false;
+            var lastTime = performance.now();
+            var frameCount = 0;
+            var fpsEl = document.getElementById('fpsDisplay');
 
-        function loadSampleData() {
-            [
-                { id: 'debug-01', name: '测试点 A', lng: 116.39, lat: 39.91 },
-                { id: 'debug-02', name: '测试点 B', lng: 121.47, lat: 31.23 },
-                { id: 'debug-03', name: '测试点 C', lng: 113.26, lat: 23.13 }
-            ].forEach(function (d) {
-                if (viewer.entities.getById(d.id)) return;
-                viewer.entities.add({
-                    id: d.id, name: d.name,
-                    position: Cesium.Cartesian3.fromDegrees(d.lng, d.lat, 0),
-                    point: { pixelSize: 12, color: Cesium.Color.CYAN, outlineColor: Cesium.Color.WHITE, outlineWidth: 2, heightReference: Cesium.HeightReference.CLAMP_TO_GROUND },
-                    label: { text: d.name, font: '13px sans-serif', fillColor: Cesium.Color.WHITE, outlineColor: Cesium.Color.BLACK, outlineWidth: 2, style: Cesium.LabelStyle.FILL_AND_OUTLINE, verticalOrigin: Cesium.VerticalOrigin.BOTTOM, pixelOffset: new Cesium.Cartesian2(0, -18), heightReference: Cesium.HeightReference.CLAMP_TO_GROUND }
+            function updateFPS() {
+                if (!fpsShowing) return;
+                frameCount++;
+                var now = performance.now();
+                if (now - lastTime >= 1000) {
+                    fpsEl.textContent = 'FPS: ' + frameCount;
+                    frameCount = 0;
+                    lastTime = now;
+                }
+                requestAnimationFrame(updateFPS);
+            }
+
+            window.toggleFPS = function () {
+                fpsShowing = !fpsShowing;
+                fpsEl.style.display = fpsShowing ? 'block' : 'none';
+                if (fpsShowing) {
+                    lastTime = performance.now();
+                    frameCount = 0;
+                    updateFPS();
+                }
+                setStatus(fpsShowing ? 'FPS 显示已开启' : 'FPS 显示已关闭');
+            };
+
+            var wireframeOn = false;
+            window.toggleWireframe = function () {
+                wireframeOn = !wireframeOn;
+                Object.keys(tilesets).forEach(function (key) {
+                    if (tilesets[key]) tilesets[key].debugWireframe = wireframeOn;
                 });
-            });
+                setStatus(wireframeOn ? '线框模式已开启' : '线框模式已关闭');
+            };
 
-            Cesium.Cesium3DTileset.fromIonAssetId(96188).then(function (tileset) {
-                tilesetInstance = tileset;
-                viewer.scene.primitives.add(tileset);
-                viewer.zoomTo(tileset);
-            }).catch(function (e) {
-                console.error('3D Tiles 加载失败:', e);
-                alert('3D Tiles 加载失败: ' + e.message);
+            window.printEntityList = function () {
+                var all = viewer.entities.values;
+                console.group('Entity 列表（共 ' + all.length + ' 个）');
+                all.forEach(function (e) {
+                    console.log({ id: e.id, name: e.name, hasPosition: !!e.position, hasPoint: !!e.point, hasLabel: !!e.label });
+                });
+                console.groupEnd();
+                setStatus('已打印 ' + all.length + ' 个实体到控制台（F12）');
+            };
+
+            window.printSceneInfo = function () {
+                var scene = viewer.scene;
+                var camera = viewer.camera;
+                var carto = Cesium.Cartographic.fromCartesian(camera.position);
+                console.group('场景信息');
+                console.log('相机经度:', Cesium.Math.toDegrees(carto.longitude).toFixed(6));
+                console.log('相机纬度:', Cesium.Math.toDegrees(carto.latitude).toFixed(6));
+                console.log('相机高度:', carto.height.toFixed(2), 'm');
+                console.log('Primitive 数:', scene.primitives.length);
+                console.log('Entity 数:', viewer.entities.values.length);
+                console.log('requestRenderMode:', scene.requestRenderMode);
+                console.groupEnd();
+                setStatus('场景信息已打印到控制台（F12）');
+            };
+
+            window.printTilesetStats = function () {
+                var keys = Object.keys(tilesets).filter(function (k) { return !!tilesets[k]; });
+                if (keys.length === 0) {
+                    setStatus('请先加载 3D Tiles 数据');
+                    return;
+                }
+                keys.forEach(function (key) {
+                    var t = tilesets[key];
+                    console.group('3D Tiles 统计 [' + key + ']');
+                    console.log('maximumScreenSpaceError:', t.maximumScreenSpaceError);
+                    if (t.statistics) {
+                        console.log('已加载瓦片数:', t.statistics.numberOfLoadedTilesTotal);
+                    }
+                    if (typeof t.totalMemoryUsageInBytes === 'number') {
+                        console.log('总内存(MB):', (t.totalMemoryUsageInBytes / 1048576).toFixed(2));
+                    }
+                    if (t.root) {
+                        console.log('根瓦片 geometricError:', t.root.geometricError);
+                        console.log('子瓦片数:', t.root.children ? t.root.children.length : 0);
+                    }
+                    console.groupEnd();
+                });
+                setStatus('Tileset 统计已打印到控制台（F12）');
+            };
+
+            // ── 实时相机坐标 ──
+            var camLngEl = document.getElementById('camLng');
+            var camLatEl = document.getElementById('camLat');
+            var camAltEl = document.getElementById('camAlt');
+            viewer.camera.changed.addEventListener(function () {
+                var carto = Cesium.Cartographic.fromCartesian(viewer.camera.positionWC);
+                camLngEl.textContent = Cesium.Math.toDegrees(carto.longitude).toFixed(4) + '°';
+                camLatEl.textContent = Cesium.Math.toDegrees(carto.latitude).toFixed(4) + '°';
+                var h = carto.height;
+                camAltEl.textContent = h > 1000 ? (h / 1000).toFixed(1) + ' km' : h.toFixed(0) + ' m';
             });
-        }
+            viewer.camera.percentageChanged = 0.01;
+        })();
     </script>
 </body>
 </html>

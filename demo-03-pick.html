@@ -51,7 +51,7 @@
 
         /* 地理坐标查询面板 */
         #geoQuery {
-            position: absolute; bottom: 16px; right: 16px; z-index: 10;
+            position: absolute; bottom: 46px; right: 16px; z-index: 10;
             background: rgba(11, 30, 61, .94); color: #fff;
             padding: 16px 20px; border-radius: 8px; border: 1px solid #2ec5ad;
             width: 300px; font-size: 13px;
@@ -89,11 +89,21 @@
         #popup .close-btn { position: absolute; top: 8px; right: 12px; background: none; border: none; color: #e74c3c; font-size: 18px; cursor: pointer; }
 
         #status {
-            position: absolute; bottom: 16px; left: 16px; z-index: 10;
+            position: absolute; bottom: 36px; left: 16px; z-index: 10;
             background: rgba(11, 30, 61, .85); color: #8ecae6;
             padding: 8px 14px; border-radius: 4px; font-size: 12px;
             max-width: 45vw;
         }
+        #coordBar {
+            position: absolute; bottom: 0; left: 0; right: 0; z-index: 10;
+            background: rgba(10, 22, 40, .92);
+            border-top: 1px solid rgba(46,197,173,.3);
+            padding: 6px 24px;
+            display: flex; gap: 24px; align-items: center;
+            font-family: 'Consolas', monospace; font-size: 12px; color: #8ba3bf;
+        }
+        #coordBar .coord-label { color: #2ec5ad; font-weight: 600; font-size: 11px; margin-right: 6px; }
+        #coordBar .coord-value { color: #e8edf3; }
     </style>
 </head>
 <body>
@@ -139,6 +149,11 @@
         <table><tbody id="popupBody"></tbody></table>
     </div>
     <div id="status">点击场景中的对象进行拾取</div>
+    <div id="coordBar">
+        <span><span class="coord-label">LNG</span><span class="coord-value" id="camLng">--</span></span>
+        <span><span class="coord-label">LAT</span><span class="coord-value" id="camLat">--</span></span>
+        <span><span class="coord-label">ALT</span><span class="coord-value" id="camAlt">--</span></span>
+    </div>
 
     <script>
         const statusEl = document.getElementById('status');
@@ -367,32 +382,55 @@
                     },
                     duration: 2,
                     complete: function () {
-                    const center = new Cesium.Cartesian2(
-                        viewer.canvas.clientWidth / 2,
-                        viewer.canvas.clientHeight / 2
-                    );
-                    const picked = viewer.scene.pick(center);
+                        setStatus('飞行完成，等待瓦片加载…');
+                        setTimeout(function () {
+                            viewer.scene.requestRender();
 
-                    if (picked instanceof Cesium.Cesium3DTileFeature) {
-                        const feature = picked;
-                        const propertyIds = feature.getPropertyIds();
-                        const rows = [
-                            ['查询经度', lng.toFixed(6) + '°'],
-                            ['查询纬度', lat.toFixed(6) + '°'],
-                            ['────', '── 要素属性 ──']
-                        ];
-                        propertyIds.slice(0, 12).forEach(function (pid) {
-                            rows.push([pid, String(feature.getProperty(pid))]);
-                        });
-                        const screenCenter = { x: window.innerWidth / 2 - 150, y: 80 };
-                        showPopup(screenCenter, '地理坐标查询结果', 'tag-geo', 'GEO → TILE QUERY', rows);
-                        setStatus('查询完成：在 (' + lng.toFixed(4) + ', ' + lat.toFixed(4) + ') 找到 3D Tiles 要素');
-                    } else {
-                        setStatus('在 (' + lng.toFixed(4) + ', ' + lat.toFixed(4) + ') 未找到 3D Tiles 要素，请调整坐标或降低飞行高度');
-                    }
+                            var targetCartesian = Cesium.Cartesian3.fromDegrees(lng, lat, 0);
+                            var screenPos = Cesium.SceneTransforms.wgs84ToWindowCoordinates(viewer.scene, targetCartesian);
+                            if (!screenPos) {
+                                screenPos = new Cesium.Cartesian2(
+                                    viewer.canvas.clientWidth / 2,
+                                    viewer.canvas.clientHeight / 2
+                                );
+                            }
+
+                            var picked = viewer.scene.pick(screenPos);
+
+                            if (picked instanceof Cesium.Cesium3DTileFeature) {
+                                var feature = picked;
+                                var propertyIds = feature.getPropertyIds();
+                                var rows = [
+                                    ['查询经度', lng.toFixed(6) + '°'],
+                                    ['查询纬度', lat.toFixed(6) + '°'],
+                                    ['────', '── 要素属性 ──']
+                                ];
+                                propertyIds.slice(0, 12).forEach(function (pid) {
+                                    rows.push([pid, String(feature.getProperty(pid))]);
+                                });
+                                var popupPos = { x: window.innerWidth / 2 - 150, y: 80 };
+                                showPopup(popupPos, '地理坐标查询结果', 'tag-geo', 'GEO → TILE QUERY', rows);
+                                setStatus('查询完成：在 (' + lng.toFixed(4) + ', ' + lat.toFixed(4) + ') 找到 3D Tiles 要素');
+                            } else {
+                                setStatus('在 (' + lng.toFixed(4) + ', ' + lat.toFixed(4) + ') 未找到 3D Tiles 要素，请确保瓦片已加载或调整坐标');
+                            }
+                        }, 2500);
                     }
                 });
             };
+
+            // ── 实时相机坐标 ──
+            var camLngEl = document.getElementById('camLng');
+            var camLatEl = document.getElementById('camLat');
+            var camAltEl = document.getElementById('camAlt');
+            viewer.camera.changed.addEventListener(function () {
+                var carto = Cesium.Cartographic.fromCartesian(viewer.camera.positionWC);
+                camLngEl.textContent = Cesium.Math.toDegrees(carto.longitude).toFixed(4) + '°';
+                camLatEl.textContent = Cesium.Math.toDegrees(carto.latitude).toFixed(4) + '°';
+                var h = carto.height;
+                camAltEl.textContent = h > 1000 ? (h / 1000).toFixed(1) + ' km' : h.toFixed(0) + ' m';
+            });
+            viewer.camera.percentageChanged = 0.01;
         })();
     </script>
 </body>

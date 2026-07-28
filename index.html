@@ -168,8 +168,8 @@
     <a href="#mod1">数据类型</a>
     <a href="#mod2">Entity API</a>
     <a href="#mod3">属性查询</a>
-    <a href="#mod4">调试体检</a>
-    <a href="#mod5">坐标系统</a>
+    <a href="#mod4">坐标系统</a>
+    <a href="#mod5">调试体检</a>
     <a href="#summary">总结</a>
     <a href="#qa">Q&amp;A</a>
 </nav>
@@ -404,45 +404,6 @@
 <!-- ════════════════════ 模块四 ════════════════════ -->
 <section id="mod4">
     <div class="section-tag">Module 04</div>
-    <h2>调试与<span>体检</span></h2>
-
-    <h3>核心调试工具</h3>
-    <div class="card-grid">
-        <div class="card">
-            <h4>Cesium Inspector</h4>
-            <p>通过 <code>viewer.extend(Cesium.viewerCesium3DTilesInspectorMixin)</code> 开启，可查看 3D Tiles 瓦片加载状态、包围盒、LOD 层级、内存占用。</p>
-        </div>
-        <div class="card">
-            <h4>浏览器 Network 面板</h4>
-            <p>过滤 <code>b3dm</code> / <code>i3dm</code> / <code>terrain</code> 等关键字，观察请求数、响应时间、是否返回 404/CORS 错误。</p>
-        </div>
-        <div class="card">
-            <h4>Console 调试</h4>
-            <p>使用 <code>viewer.entities.values</code> 遍历实体列表；<code>viewer.scene.primitives</code> 查看 Primitive 集合；<code>viewer.camera</code> 获取相机位姿。</p>
-        </div>
-    </div>
-
-    <h3>常见症状自查表</h3>
-    <table>
-        <thead><tr><th>症状</th><th>可能原因</th><th>排查方向</th></tr></thead>
-        <tbody>
-            <tr><td style="color:var(--danger);font-weight:700;">白屏</td><td>WebGL 上下文丢失</td><td>检查 GPU 驱动 / 浏览器硬件加速开关</td></tr>
-            <tr><td style="color:var(--danger);font-weight:700;">黑屏（无底图）</td><td>影像服务未响应或 Token 无效</td><td>Network 面板检查影像 URL 返回状态</td></tr>
-            <tr><td style="color:var(--warn);font-weight:700;">模型悬空</td><td>未设置 <code>heightReference</code></td><td>改为 <code>CLAMP_TO_GROUND</code> 或调整高度偏移</td></tr>
-            <tr><td style="color:var(--warn);font-weight:700;">模型沉入地下</td><td>地形精度不匹配</td><td>检查 <code>modelMatrix</code> 或 <code>heightOffset</code></td></tr>
-            <tr><td style="color:var(--danger);font-weight:700;">跨域错误（CORS）</td><td>资源服务器未配置 CORS 头</td><td>服务端添加 <code>Access-Control-Allow-Origin</code></td></tr>
-            <tr><td style="color:var(--warn);font-weight:700;">瓦片闪烁 / 加载慢</td><td>SSE 设置过小 / 网络瓶颈</td><td>增大 <code>maximumScreenSpaceError</code> 值</td></tr>
-            <tr><td style="color:var(--warn);font-weight:700;">帧率极低</td><td>Entity 过多 / 未启用按需渲染</td><td>改用 Primitive + <code>requestRenderMode</code></td></tr>
-            <tr><td style="color:var(--danger);font-weight:700;">401 Unauthorized</td><td>Ion Token 过期或权限不足</td><td>前往 <code>ion.cesium.com</code> 重新生成</td></tr>
-        </tbody>
-    </table>
-
-    <a class="demo-btn" href="demo-04-debug.html" target="_blank">打开示例 → demo-04-debug.html</a>
-</section>
-
-<!-- ════════════════════ 模块五 ════════════════════ -->
-<section id="mod5">
-    <div class="section-tag">Module 05</div>
     <h2>坐标系统与<span>空间计算</span></h2>
 
     <h3>Cesium 中的三种坐标系</h3>
@@ -569,6 +530,45 @@
     <a class="demo-btn" href="demo-05-coordinates.html" target="_blank">打开示例 → demo-05-coordinates.html</a>
 </section>
 
+<!-- ════════════════════ 模块五 ════════════════════ -->
+<section id="mod5">
+    <div class="section-tag">Module 05</div>
+    <h2>调试与<span>体检</span></h2>
+
+    <h3>核心调试工具</h3>
+    <div class="card-grid">
+        <div class="card">
+            <h4>Cesium Inspector</h4>
+            <p>通过 <code>viewer.extend(Cesium.viewerCesiumInspectorMixin)</code> 开启，可查看地形渲染、瓦片加载状态、包围盒、深度与拾取信息。</p>
+        </div>
+        <div class="card">
+            <h4>浏览器 Network 面板</h4>
+            <p>过滤 <code>b3dm</code> / <code>i3dm</code> / <code>terrain</code> 等关键字，观察请求数、响应时间、是否返回 404/CORS 错误。</p>
+        </div>
+        <div class="card">
+            <h4>Console 调试</h4>
+            <p>使用 <code>viewer.entities.values</code> 遍历实体列表；<code>viewer.scene.primitives</code> 查看 Primitive 集合；<code>viewer.camera</code> 获取相机位姿。</p>
+        </div>
+    </div>
+
+    <h3>常见症状自查表</h3>
+    <table>
+        <thead><tr><th>症状</th><th>可能原因</th><th>排查方向</th></tr></thead>
+        <tbody>
+            <tr><td style="color:var(--danger);font-weight:700;">白屏</td><td>WebGL 上下文丢失</td><td>检查 GPU 驱动 / 浏览器硬件加速开关</td></tr>
+            <tr><td style="color:var(--danger);font-weight:700;">黑屏（无底图）</td><td>影像服务未响应或 Token 无效</td><td>Network 面板检查影像 URL 返回状态</td></tr>
+            <tr><td style="color:var(--warn);font-weight:700;">模型悬空</td><td>未设置 <code>heightReference</code></td><td>改为 <code>CLAMP_TO_GROUND</code> 或调整高度偏移</td></tr>
+            <tr><td style="color:var(--warn);font-weight:700;">模型沉入地下</td><td>地形精度不匹配</td><td>检查 <code>modelMatrix</code> 或 <code>heightOffset</code></td></tr>
+            <tr><td style="color:var(--danger);font-weight:700;">跨域错误（CORS）</td><td>资源服务器未配置 CORS 头</td><td>服务端添加 <code>Access-Control-Allow-Origin</code></td></tr>
+            <tr><td style="color:var(--warn);font-weight:700;">瓦片闪烁 / 加载慢</td><td>SSE 设置过小 / 网络瓶颈</td><td>增大 <code>maximumScreenSpaceError</code> 值</td></tr>
+            <tr><td style="color:var(--warn);font-weight:700;">帧率极低</td><td>Entity 过多 / 未启用按需渲染</td><td>改用 Primitive + <code>requestRenderMode</code></td></tr>
+            <tr><td style="color:var(--danger);font-weight:700;">401 Unauthorized</td><td>Ion Token 过期或权限不足</td><td>前往 <code>ion.cesium.com</code> 重新生成</td></tr>
+        </tbody>
+    </table>
+
+    <a class="demo-btn" href="demo-04-debug.html" target="_blank">打开示例 → demo-04-debug.html</a>
+</section>
+
 <!-- ════════════════════ 总结 ════════════════════ -->
 <section id="summary">
     <div class="section-tag">Summary</div>
@@ -596,8 +596,8 @@
             <tr><td><a href="demo-01-loading.html" target="_blank" style="color:var(--accent);">demo-01-loading.html</a></td><td>数据类型</td><td>影像 + 地形 + 3D Tiles 叠加加载</td></tr>
             <tr><td><a href="demo-02-entity.html" target="_blank" style="color:var(--accent);">demo-02-entity.html</a></td><td>Entity API</td><td>实体增删改查 + 属性绑定</td></tr>
             <tr><td><a href="demo-03-pick.html" target="_blank" style="color:var(--accent);">demo-03-pick.html</a></td><td>属性查询</td><td>Entity / 3D Tiles 拾取分支</td></tr>
-            <tr><td><a href="demo-04-debug.html" target="_blank" style="color:var(--accent);">demo-04-debug.html</a></td><td>调试体检</td><td>Inspector + 控制台 + 自查表</td></tr>
             <tr><td><a href="demo-05-coordinates.html" target="_blank" style="color:var(--accent);">demo-05-coordinates.html</a></td><td>坐标系统</td><td>WGS84 ⇄ Cartesian3 互转 + 实时坐标跟踪</td></tr>
+            <tr><td><a href="demo-04-debug.html" target="_blank" style="color:var(--accent);">demo-04-debug.html</a></td><td>调试体检</td><td>Inspector + 控制台调试（复用示例一场景数据）</td></tr>
         </tbody>
     </table>
 </section>
