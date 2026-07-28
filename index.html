@@ -250,17 +250,12 @@
 
     <div class="alert alert-warn">
         <span class="alert-icon">⚠</span>
-        <div><strong>Ion 平台 vs 通用 API：</strong>上表展示的是<strong>加载任意数据服务</strong>的通用 API。如果你的数据托管在 Cesium Ion 平台，可以使用 <code>fromIonAssetId()</code> / <code>IonImageryProvider.fromAssetId()</code> 等便捷方法，但这些<strong>仅适用于 Ion 平台数据</strong>，不是通用加载 API。超图 Cesium 不支持这些静态工厂方法（1.104+ 新增）。</div>
-    </div>
-
-    <div class="alert alert-danger">
-        <span class="alert-icon">⛔</span>
-        <div><strong>关键警示：</strong>倾斜摄影数据必须通过 3D Tiles 流式加载，不可一次性全量读入内存。典型倾斜数据量可达数十 GB，违反此原则将导致浏览器崩溃。OBJ 格式 Cesium 不直接支持，需先转为 glTF/glb。</div>
+        <div>上表为通用 URL 加载 API。Ion 平台数据可用 <code>fromIonAssetId()</code> 快捷加载，但超图版不支持。倾斜摄影必须走 3D Tiles 流式加载，不可全量读入。</div>
     </div>
 
     <div class="alert alert-info">
         <span class="alert-icon">💡</span>
-        <div>超图 Cesium 额外支持 S3M / S3MB 格式，通过 <code>S3MTilesLayer</code> 加载 iServer 发布的三维服务。CDN 社区版不支持。</div>
+        <div>超图版额外支持 S3M/S3MB 格式，通过 <code>S3MTilesLayer</code> 加载 iServer 三维服务。</div>
     </div>
 
     <a class="demo-btn" href="demo-01-loading.html" target="cesium-demo">打开示例 → demo-01-loading.html</a>
@@ -332,17 +327,12 @@
         </tbody>
     </table>
 
-    <div class="alert alert-info">
-        <span class="alert-icon">💡</span>
-        <div><strong>为什么需要两套 API？</strong>Entity 是对 Primitive 的封装——它在内部将你的描述性参数（"在这个经纬度画一个红点"）转译为底层 GPU 指令。这层抽象带来便利但也带来开销。当对象数量少时开销可忽略，当对象数量多时开销会成为帧率瓶颈，此时应绕过封装直接使用 Primitive。</div>
+    <div class="alert alert-warn">
+        <span class="alert-icon">⚠</span>
+        <div>Entity 封装了 Primitive，数量少时方便好用，超过 100 个帧率明显下降。大批量标注切 <code>PointPrimitiveCollection</code>。</div>
     </div>
 
-    <div class="alert alert-danger">
-        <span class="alert-icon">⛔</span>
-        <div><strong>性能红线：</strong>Entity 数量超过 100 后帧率将显著下降。如需展示上千个标注点，务必使用 <code>PointPrimitiveCollection</code> 或 <code>BillboardCollection</code>。</div>
-    </div>
-
-    <a class="demo-btn" href="demo-02-entity.html" target="_blank">打开示例 → demo-02-entity.html</a>
+    <a class="demo-btn" href="demo-02-entity.html" target="cesium-demo">打开示例 → demo-02-entity.html</a>
 </section>
 
 <!-- ════════════════════ 模块三 ════════════════════ -->
@@ -398,10 +388,10 @@
 
     <div class="alert alert-warn">
         <span class="alert-icon">⚠</span>
-        <div><strong>大数据建议：</strong>前端拾取只取对象 ID，详细信息通过后端接口查询返回，避免前端内存暴涨。切勿将全量业务数据都挂载到 <code>entity.properties</code> 上。</div>
+        <div>拾取只取 ID，详情走后端接口，别把全量业务数据挂到 <code>properties</code> 上。</div>
     </div>
 
-    <a class="demo-btn" href="demo-03-pick.html" target="_blank">打开示例 → demo-03-pick.html</a>
+    <a class="demo-btn" href="demo-03-pick.html" target="cesium-demo">打开示例 → demo-03-pick.html</a>
 </section>
 
 <!-- ════════════════════ 模块四 ════════════════════ -->
@@ -484,7 +474,7 @@
 
     <div class="alert alert-warn">
         <span class="alert-icon">⚠</span>
-        <div><strong>为什么坐标系这么多？</strong>地球不是完美球体，不同地区/行业采用不同的参考椭球和投影方式以获得最佳精度。Web 端统一用 4326（地理）+ 3857（投影），Cesium 三维场景内部全部基于 WGS84。遇到数据偏移时，首先检查数据源和加载端的坐标系是否一致。</div>
+        <div>数据偏移？先查数据源和加载端坐标系是否一致。Cesium 内部全部基于 WGS84 (4326)。</div>
     </div>
 
     <h3>核心转换流程</h3>
@@ -521,14 +511,9 @@
         </div>
     </div>
 
-    <div class="alert alert-danger">
-        <span class="alert-icon">⛔</span>
-        <div><strong>最常见的坑：</strong><code>Cartesian3.fromDegrees()</code> 参数顺序是 <strong>(经度, 纬度, 高度)</strong>，不是 (纬度, 经度)！搞反了东西就会"放歪"——中国的点会跑到大西洋上。</div>
-    </div>
-
     <div class="alert alert-info">
         <span class="alert-icon">💡</span>
-        <div>坐标转换 API（<code>Cartesian3</code>、<code>Cartographic</code>、<code>Math</code>）属于 Cesium 核心模块，CDN 版和超图版均可使用，无版本差异。</div>
+        <div>坐标转换 API（<code>Cartesian3</code>、<code>Cartographic</code>、<code>Math</code>）为 Cesium 核心模块，CDN 版和超图版通用。</div>
     </div>
 
     <a class="demo-btn" href="demo-04-coordinates.html" target="cesium-demo">打开示例 → demo-04-coordinates.html</a>
@@ -569,14 +554,14 @@
     <table>
         <thead><tr><th>症状</th><th>可能原因</th><th>排查方向</th></tr></thead>
         <tbody>
-            <tr><td style="color:var(--danger);font-weight:700;">白屏</td><td>WebGL 上下文丢失</td><td>检查 GPU 驱动 / 浏览器硬件加速开关</td></tr>
-            <tr><td style="color:var(--danger);font-weight:700;">黑屏（无底图）</td><td>影像服务未响应或 Token 无效</td><td>Network 面板检查影像 URL 返回状态</td></tr>
-            <tr><td style="color:var(--warn);font-weight:700;">模型悬空</td><td>未设置 <code>heightReference</code></td><td>改为 <code>CLAMP_TO_GROUND</code> 或调整高度偏移</td></tr>
-            <tr><td style="color:var(--warn);font-weight:700;">模型沉入地下</td><td>地形精度不匹配</td><td>检查 <code>modelMatrix</code> 或 <code>heightOffset</code></td></tr>
-            <tr><td style="color:var(--danger);font-weight:700;">跨域错误（CORS）</td><td>资源服务器未配置 CORS 头</td><td>服务端添加 <code>Access-Control-Allow-Origin</code></td></tr>
-            <tr><td style="color:var(--warn);font-weight:700;">瓦片闪烁 / 加载慢</td><td>SSE 设置过小 / 网络瓶颈</td><td>增大 <code>maximumScreenSpaceError</code> 值</td></tr>
-            <tr><td style="color:var(--warn);font-weight:700;">帧率极低</td><td>Entity 过多 / 未启用按需渲染</td><td>改用 Primitive + <code>requestRenderMode</code></td></tr>
-            <tr><td style="color:var(--danger);font-weight:700;">401 Unauthorized</td><td>Ion Token 过期或权限不足</td><td>前往 <code>ion.cesium.com</code> 重新生成</td></tr>
+            <tr><td>白屏</td><td>WebGL 上下文丢失</td><td>检查 GPU 驱动 / 浏览器硬件加速开关</td></tr>
+            <tr><td>黑屏（无底图）</td><td>影像服务未响应或 Token 无效</td><td>Network 面板检查影像 URL 返回状态</td></tr>
+            <tr><td>模型悬空</td><td>未设置 <code>heightReference</code></td><td>改为 <code>CLAMP_TO_GROUND</code> 或调整高度偏移</td></tr>
+            <tr><td>模型沉入地下</td><td>地形精度不匹配</td><td>检查 <code>modelMatrix</code> 或 <code>heightOffset</code></td></tr>
+            <tr><td>跨域错误（CORS）</td><td>资源服务器未配置 CORS 头</td><td>服务端添加 <code>Access-Control-Allow-Origin</code></td></tr>
+            <tr><td>瓦片闪烁 / 加载慢</td><td>SSE 设置过小 / 网络瓶颈</td><td>增大 <code>maximumScreenSpaceError</code> 值</td></tr>
+            <tr><td>帧率极低</td><td>Entity 过多 / 未启用按需渲染</td><td>改用 Primitive + <code>requestRenderMode</code></td></tr>
+            <tr><td>401 Unauthorized</td><td>Ion Token 过期或权限不足</td><td>前往 <code>ion.cesium.com</code> 重新生成</td></tr>
         </tbody>
     </table>
 
@@ -586,30 +571,38 @@
 <!-- ════════════════════ 总结 ════════════════════ -->
 <section id="summary">
     <div class="section-tag">Summary</div>
-    <h2>五句话<span>带走</span></h2>
+    <h2>各模块<span>核心回顾</span></h2>
 
-    <div class="card-grid">
-        <div class="card" style="border-color:var(--accent);border-width:2px;">
-            <h4 style="font-size:18px;">1. 数据决定 API</h4>
-            <p style="font-size:14px;">看到 <strong>WMS/WMTS</strong> → ImageryProvider<br>看到 <strong>GeoJSON/KML</strong> → DataSource.load()<br>看到 <strong>3D Tiles</strong> → Cesium3DTileset<br>看到 <strong>glTF</strong> → Entity.model 或 Model.fromGltfAsync<br>看到 <strong>S3M</strong> → 只能用超图版 addS3MTilesLayerByScp</p>
-        </div>
-        <div class="card" style="border-color:var(--accent);border-width:2px;">
-            <h4 style="font-size:18px;">2. Entity 是画笔，Primitive 是性能</h4>
-            <p style="font-size:14px;">标注 ≤100 个 → <code>entities.add()</code> 够用<br>标注 >100 个 → 切 <code>PointPrimitiveCollection</code><br>业务属性挂 <code>properties</code>，拾取时直接读</p>
-        </div>
-        <div class="card" style="border-color:var(--accent);border-width:2px;">
-            <h4 style="font-size:18px;">3. 拾取三分支</h4>
-            <p style="font-size:14px;"><code>picked.id instanceof Entity</code> → 标注点<br><code>picked instanceof Cesium3DTileFeature</code> → 建筑/BIM<br>都不是 → <code>pickPosition()</code> 取地理坐标</p>
-        </div>
-        <div class="card" style="border-color:var(--accent);border-width:2px;">
-            <h4 style="font-size:18px;">4. 经纬度一定是 (经度, 纬度)</h4>
-            <p style="font-size:14px;"><code>fromDegrees(<strong>lng</strong>, <strong>lat</strong>, alt)</code> — 不是 (lat, lng)<br>WGS84 ⇄ Cartesian3 ⇄ 屏幕坐标<br>全链路都走这三步</p>
-        </div>
-        <div class="card" style="border-color:var(--accent);border-width:2px;">
-            <h4 style="font-size:18px;">5. 出问题先查这三处</h4>
-            <p style="font-size:14px;">① <code>Inspector</code> → 看瓦片/地形加载状态<br>② <code>Network 面板</code> → 过滤 b3dm / terrain<br>③ <code>Console</code> → <code>viewer.camera</code> 确认位置</p>
-        </div>
-    </div>
+    <table>
+        <thead><tr><th>模块</th><th>核心结论</th><th>关键 API / 要点</th></tr></thead>
+        <tbody>
+            <tr>
+                <td><strong>数据加载</strong></td>
+                <td>看到数据格式就知道用哪个 API</td>
+                <td>影像 → <code>ImageryProvider</code>，3D Tiles → <code>Cesium3DTileset</code>，glTF → <code>Entity.model</code>，矢量 → <code>DataSource.load()</code></td>
+            </tr>
+            <tr>
+                <td><strong>Entity API</strong></td>
+                <td>Entity 够用就用，量大切 Primitive</td>
+                <td><code>entities.add()</code> 挂 <code>properties</code>，≤100 个无压力；超过则用 <code>PointPrimitiveCollection</code></td>
+            </tr>
+            <tr>
+                <td><strong>属性查询</strong></td>
+                <td>拾取后按类型分支处理</td>
+                <td><code>picked.id instanceof Entity</code> → 标注；<code>picked instanceof Cesium3DTileFeature</code> → 瓦片要素；其余 → <code>pickPosition()</code></td>
+            </tr>
+            <tr>
+                <td><strong>坐标系统</strong></td>
+                <td>Cesium 内部统一 WGS84，三种坐标互转</td>
+                <td><code>fromDegrees(lng, lat, alt)</code> ⇄ <code>Cartographic.fromCartesian()</code> ⇄ <code>wgs84ToWindowCoordinates()</code></td>
+            </tr>
+            <tr>
+                <td><strong>调试排查</strong></td>
+                <td>Inspector + Network + Console 三件套定位问题</td>
+                <td><code>viewerCesiumInspectorMixin</code> 看场景状态；Network 过滤 <code>b3dm/terrain</code>；Console 查 <code>viewer.camera</code></td>
+            </tr>
+        </tbody>
+    </table>
 
     <h3>示例文件索引</h3>
     <table>

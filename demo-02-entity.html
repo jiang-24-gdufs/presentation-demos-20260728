@@ -45,7 +45,7 @@
 </head>
 <body>
     <div id="header">
-        <h1>模块二：<span>Entity API</span><span class="badge">超图 Cesium</span></h1>
+        <h1>模块二：<span>Entity API</span><span class="badge">CDN Cesium</span></h1>
         <a href="index.html">← 返回讲解文档</a>
     </div>
     <div id="cesiumContainer"></div>
@@ -77,11 +77,17 @@
 
     <script>
         const viewer = new Cesium.Viewer('cesiumContainer', {
-            terrainProvider: Cesium.createWorldTerrain(),
             baseLayerPicker: false, geocoder: false, homeButton: false,
             sceneModePicker: false, navigationHelpButton: false,
-            animation: false, timeline: false, fullscreenButton: false
+            animation: false, timeline: false, fullscreenButton: false,
+            selectionIndicator: false, infoBox: false
         });
+
+        (async function () {
+            try {
+                viewer.terrainProvider = await Cesium.CesiumTerrainProvider.fromIonAssetId(1);
+            } catch (e) { console.warn('Terrain fallback:', e); }
+        })();
 
         viewer.scene.globe.depthTestAgainstTerrain = false;
         const entities = viewer.entities;

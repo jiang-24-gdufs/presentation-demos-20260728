@@ -330,7 +330,7 @@
                     setStatus('请输入有效的经纬度');
                     return;
                 }
-                if (!osmTileset) {
+                if (!osmTileset || !viewer.scene.primitives.contains(osmTileset)) {
                     setStatus('请先勾选加载 OSM Buildings');
                     return;
                 }
