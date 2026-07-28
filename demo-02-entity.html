@@ -30,7 +30,7 @@
             position: absolute; top: 70px; left: 16px; z-index: 10;
             background: rgba(11, 30, 61, .92); color: #fff;
             padding: 16px 20px; border-radius: 8px; border: 1px solid #2ec5ad;
-            min-width: 280px; font-size: 13px;
+            width: 280px; font-size: 13px;
         }
         #panel h3 { color: #2ec5ad; font-size: 15px; margin-bottom: 12px; }
         #panel button {
@@ -88,9 +88,6 @@
         <button onclick="addPipelineDemo()">管线路径标注</button>
         <button onclick="addAreaFenceDemo()">区域围栏</button>
         <button onclick="addTrajectoryDemo()">车辆轨迹回放</button>
-        <div class="warning">
-            ⚠ 性能红线：Entity 数量 &lt; 100 用 Entity API，&gt; 100 请改用 Primitive。大量同类标注请使用 PointPrimitiveCollection。
-        </div>
     </div>
     <div id="queryPanel">
         <h3>查询实体</h3>
@@ -108,6 +105,7 @@
             animation: false, timeline: false, fullscreenButton: false
         });
 
+        viewer.scene.globe.depthTestAgainstTerrain = false;
         const entities = viewer.entities;
         let entityCounter = 0;
 
@@ -347,7 +345,7 @@
                 path: { resolution: 1, material: new Cesium.PolylineGlowMaterialProperty({ glowPower: 0.15, color: Cesium.Color.LIME }), width: 4 },
                 properties: { type: '巡检车辆', plateNo: '京A12345' }
             });
-            viewer.zoomTo(entities);
+            viewer.zoomTo(entities,new Cesium.HeadingPitchRange(0, -5, 10000));
             updateCount();
         }
     </script>

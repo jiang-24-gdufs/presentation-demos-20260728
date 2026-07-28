@@ -126,3 +126,33 @@ try {
   console.log(`Error loading tileset: ${error}`);
 }
 ```
+
+
+---
+Select "Google Photorealistic 3D Tiles"	2275207	Google Photorealistic 3D Tiles	3D Tiles	Sep 13 2023 7:15 AM	
+-
+-	Delete "Google Photorealistic 3D Tiles"
+Select "Aerometrex San Francisco High Resolution 3D Model with Street Level Enhanced 3D (Non-Commercial Trial)"	1415196	Aerometrex San Francisco High Resolution 3D Model with Street Level Enhanced 3D (Non-Commercial Trial)	3D Tiles	Nov 23 2022 10:44 PM	
+-
+-	Delete "Aerometrex San Francisco High Resolution 3D Model with Street Level Enhanced 3D (Non-Commercial Trial)"
+Select "Aerometrex Denver High Resolution 3D Model with Street Level Enhanced 3D (Non-Commercial Trial)"	354307	Aerometrex Denver High Resolution 3D Model with Street Level Enhanced 3D (Non-Commercial Trial)	3D Tiles	Mar 11 2021 5:54 AM	
+-
+-	Delete "Aerometrex Denver High Resolution 3D Model with Street Level Enhanced 3D (Non-Commercial Trial)"
+Select "Cesium OSM Buildings"	96188	Cesium OSM Buildings	3D Tiles	May 1 2020 6:55 AM	
+-
+-	Delete "Cesium OSM Buildings"
+Select "Melbourne Point Cloud"	43978	Melbourne Point Cloud	3D Tiles	Sep 18 2019 9:37 PM	
+-
+-	Delete "Melbourne Point Cloud"
+Select "Montreal Point Cloud"	28945	Montreal Point Cloud	3D Tiles	May 25 2019 12:04 AM
+---
+更新3DTiles的数据列表，基于正确的Assetid来加载
+给loading场景添加实时的相机位置（经纬度）在右下角展示
+
+---
+1. 第四点和第五点内容考虑换一个顺序
+2. debug中使用`viewer.extend(Cesium.viewerCesiumInspectorMixin); ` 来作为调试入口
+3. 统一camera位置在底部bar中的样式
+4. 拒接重复，尤其是把讲解内容照搬到demo中， 这是多此一举的。
+5. 调试模式直接复用示例1，因为示例1已经有足够多的数据了；在右下角使用一个小弹窗（点击显示）
+6. “地理坐标查询 3D Tiles” 这个功能不生效
